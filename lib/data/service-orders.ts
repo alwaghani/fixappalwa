@@ -609,7 +609,7 @@ export const getDashboardData = cache(async (teknisiId?: number): Promise<Dashbo
       },
       include: {
         parts: { select: { hargaPokok: true } },
-        teknisi: { select: { komisiPersen: true } },
+        teknisi: { select: { role: true, komisiPersen: true } },
       },
     }),
     teknisiId
@@ -625,7 +625,7 @@ export const getDashboardData = cache(async (teknisiId?: number): Promise<Dashbo
     revenueBulanIni = lunasOrders.reduce((sum, o) => {
       const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
       const profit = (o.biayaFinal ?? 0) - modalPart;
-      const persen = o.teknisi?.komisiPersen ?? 40;
+      const persen = o.teknisi?.role === "admin" ? 0 : (o.teknisi?.komisiPersen ?? 40);
       return sum + Math.max(0, Math.round(profit * (persen / 100)));
     }, 0);
   } else {
@@ -643,7 +643,7 @@ export const getDashboardData = cache(async (teknisiId?: number): Promise<Dashbo
     },
     include: {
       parts: { select: { hargaPokok: true } },
-      teknisi: { select: { komisiPersen: true } },
+      teknisi: { select: { role: true, komisiPersen: true } },
     },
   });
 
@@ -660,7 +660,7 @@ export const getDashboardData = cache(async (teknisiId?: number): Promise<Dashbo
       amount = filteredOrders.reduce((sum, o) => {
         const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
         const profit = (o.biayaFinal ?? 0) - modalPart;
-        const persen = o.teknisi?.komisiPersen ?? 40;
+        const persen = o.teknisi?.role === "admin" ? 0 : (o.teknisi?.komisiPersen ?? 40);
         return sum + Math.max(0, Math.round(profit * (persen / 100)));
       }, 0);
     } else {

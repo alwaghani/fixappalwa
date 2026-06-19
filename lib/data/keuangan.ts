@@ -223,7 +223,7 @@ export const getProfitStats = cache(async (
     include: {
       customer: { select: { nama: true } },
       parts: { select: { hargaPokok: true } },
-      teknisi: { select: { name: true, username: true, komisiPersen: true } },
+      teknisi: { select: { name: true, username: true, role: true, komisiPersen: true } },
     },
     orderBy: { lunasAt: "desc" },
   });
@@ -234,7 +234,7 @@ export const getProfitStats = cache(async (
     const profit = revenue - modalPart; // Laba Kotor
 
     let komisi = 0;
-    if (o.teknisi) {
+    if (o.teknisi && o.teknisi.role !== "admin") {
       komisi = Math.round(profit * (o.teknisi.komisiPersen / 100));
     }
     const labaBersih = profit - komisi;
