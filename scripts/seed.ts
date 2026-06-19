@@ -20,7 +20,7 @@ async function seed() {
         username,
         passwordHash,
         name: "Admin",
-        role: "kasir",
+        role: "admin",
       },
     });
     console.log(`User "${username}" seeded successfully.`);
