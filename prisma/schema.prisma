@@ -1,0 +1,116 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum ServiceStatus {
+  diterima
+  menunggu_part
+  dikerjakan
+  selesai
+}
+
+enum PaymentStatus {
+  BELUM_LUNAS
+  DP
+  LUNAS
+}
+
+enum Role {
+  kasir
+  teknisi
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  name         String?
+  role         Role     @default(teknisi)
+  createdAt    DateTime @default(now())
+  assignments  ServiceOrder[]
+}
+
+model Customer {
+  id        Int            @id @default(autoincrement())
+  nama      String
+  noHp      String         @unique
+  alamat    String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  orders    ServiceOrder[]
+}
+
+model ServiceOrder {
+  id            Int            @id @default(autoincrement())
+  noService     String         @unique
+  customerId    Int
+  customer      Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  merk          String
+  tipe          String
+  pin           String?
+  problem       String
+  estimasiBiaya Int
+  biayaFinal    Int?
+  statusBayar   PaymentStatus  @default(BELUM_LUNAS)
+  dpNominal     Int?
+  lunasAt       DateTime?
+  teknisiId     Int?
+  teknisi       User?          @relation(fields: [teknisiId], references: [id])
+  catatan       String?
+  diagnostik    String?
+  status        ServiceStatus  @default(diterima)
+  warrantyUntil DateTime?
+  estimasiSelesai DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  parts         ServicePart[]
+  activityLogs  ActivityLog[]
+  transactions  CashTransaction[]
+}
+
+model ServicePart {
+  id             Int          @id @default(autoincrement())
+  serviceOrderId Int
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  nama           String
+  harga          Int
+  hargaPokok     Int?
+  createdAt      DateTime     @default(now())
+  transaction    CashTransaction?
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id             Int          @id @default(autoincrement())
+  serviceOrderId Int
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  userId         Int?
+  action         String
+  detail         String
+  createdAt      DateTime     @default(now())
+}
+
+model CashTransaction {
+  id             Int           @id @default(autoincrement())
+  amount         Int           // nominal dalam sen (Rupiah * 100)
+  type           String        // "IN" atau "OUT"
+  category       String        // "DP", "PELUNASAN", "SPAREPART", "LAINNYA"
+  description    String
+  createdAt      DateTime      @default(now())
+  serviceOrderId Int?
+  serviceOrder   ServiceOrder? @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  servicePartId  Int?          @unique
+  servicePart    ServicePart?  @relation(fields: [servicePartId], references: [id], onDelete: Cascade)
+}
