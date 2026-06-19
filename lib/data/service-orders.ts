@@ -535,7 +535,7 @@ export const getTeknisiList = cache(async (): Promise<Array<{ id: number; name: 
   });
 });
 
-export const getDashboardData = cache(async (): Promise<DashboardStats> => {
+export const getDashboardData = cache(async (teknisiId?: number): Promise<DashboardStats> => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
@@ -548,25 +548,54 @@ export const getDashboardData = cache(async (): Promise<DashboardStats> => {
     dikerjakan,
     selesai,
     total,
-    totalCustomers,
     activeServices,
     recentCompleted,
     lunasOrders,
+    totalCustomers,
   ] = await Promise.all([
-    prisma.serviceOrder.count({ where: { status: "diterima" } }),
-    prisma.serviceOrder.count({ where: { status: "menunggu_part" } }),
-    prisma.serviceOrder.count({ where: { status: "dikerjakan" } }),
-    prisma.serviceOrder.count({ where: { status: "selesai" } }),
-    prisma.serviceOrder.count(),
-    prisma.customer.count(),
+    prisma.serviceOrder.count({
+      where: {
+        status: "diterima",
+        ...(teknisiId ? { OR: [{ teknisiId: null }, { teknisiId }] } : {}),
+      },
+    }),
+    prisma.serviceOrder.count({
+      where: {
+        status: "menunggu_part",
+        ...(teknisiId ? { teknisiId } : {}),
+      },
+    }),
+    prisma.serviceOrder.count({
+      where: {
+        status: "dikerjakan",
+        ...(teknisiId ? { teknisiId } : {}),
+      },
+    }),
+    prisma.serviceOrder.count({
+      where: {
+        status: "selesai",
+        ...(teknisiId ? { teknisiId } : {}),
+      },
+    }),
+    prisma.serviceOrder.count({
+      where: {
+        ...(teknisiId ? { teknisiId } : {}),
+      },
+    }),
     prisma.serviceOrder.findMany({
-      where: { status: { not: "selesai" } },
+      where: {
+        status: { not: "selesai" },
+        ...(teknisiId ? { teknisiId } : {}),
+      },
       include: { customer: { select: customerPick } },
       orderBy: { updatedAt: "desc" },
       take: 10,
     }),
     prisma.serviceOrder.findMany({
-      where: { status: "selesai" },
+      where: {
+        status: "selesai",
+        ...(teknisiId ? { teknisiId } : {}),
+      },
       include: { customer: { select: customerPick } },
       orderBy: { updatedAt: "desc" },
       take: 10,
@@ -576,35 +605,68 @@ export const getDashboardData = cache(async (): Promise<DashboardStats> => {
         biayaFinal: { not: null },
         statusBayar: "LUNAS" as PaymentStatus,
         lunasAt: { gte: monthStart, lte: monthEnd },
+        ...(teknisiId ? { teknisiId } : {}),
       },
-      select: { biayaFinal: true },
+      include: {
+        parts: { select: { hargaPokok: true } },
+        teknisi: { select: { komisiPersen: true } },
+      },
     }),
+    teknisiId
+      ? prisma.serviceOrder.groupBy({
+          by: ["customerId"],
+          where: { teknisiId },
+        }).then((res) => res.length)
+      : prisma.customer.count(),
   ]);
 
-  const revenueBulanIni = lunasOrders.reduce(
-    (sum, o) => sum + (o.biayaFinal ?? 0),
-    0,
-  );
+  let revenueBulanIni = 0;
+  if (teknisiId) {
+    revenueBulanIni = lunasOrders.reduce((sum, o) => {
+      const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
+      const profit = (o.biayaFinal ?? 0) - modalPart;
+      const persen = o.teknisi?.komisiPersen ?? 40;
+      return sum + Math.max(0, Math.round(profit * (persen / 100)));
+    }, 0);
+  } else {
+    revenueBulanIni = lunasOrders.reduce((sum, o) => sum + (o.biayaFinal ?? 0), 0);
+  }
 
-  // Last 6 months revenue for chart
+  // Last 6 months revenue for chart (or technician commission split)
   const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
   const monthOrders = await prisma.serviceOrder.findMany({
     where: {
       biayaFinal: { not: null },
       statusBayar: "LUNAS" as PaymentStatus,
       lunasAt: { gte: sixMonthsAgo },
+      ...(teknisiId ? { teknisiId } : {}),
     },
-    select: { biayaFinal: true, lunasAt: true },
+    include: {
+      parts: { select: { hargaPokok: true } },
+      teknisi: { select: { komisiPersen: true } },
+    },
   });
 
   const monthlyRevenue: { month: string; revenue: number }[] = [];
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const label = format(d, "MMM", { locale: id });
-    const revenue = monthOrders
-      .filter((o) => o.lunasAt && o.lunasAt.getMonth() === d.getMonth() && o.lunasAt.getFullYear() === d.getFullYear())
-      .reduce((s, o) => s + (o.biayaFinal ?? 0), 0);
-    monthlyRevenue.push({ month: label, revenue });
+    const filteredOrders = monthOrders.filter(
+      (o) => o.lunasAt && o.lunasAt.getMonth() === d.getMonth() && o.lunasAt.getFullYear() === d.getFullYear()
+    );
+
+    let amount = 0;
+    if (teknisiId) {
+      amount = filteredOrders.reduce((sum, o) => {
+        const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
+        const profit = (o.biayaFinal ?? 0) - modalPart;
+        const persen = o.teknisi?.komisiPersen ?? 40;
+        return sum + Math.max(0, Math.round(profit * (persen / 100)));
+      }, 0);
+    } else {
+      amount = filteredOrders.reduce((s, o) => s + (o.biayaFinal ?? 0), 0);
+    }
+    monthlyRevenue.push({ month: label, revenue: amount });
   }
 
   return {

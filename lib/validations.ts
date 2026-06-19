@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { ServiceStatus, PaymentStatus } from "@/lib/generated/prisma/client";
+import { ServiceStatus, PaymentStatus, Role } from "@/lib/generated/prisma/client";
 
 export const customerSchema = z.object({
   nama: z.string().min(1, "Nama wajib diisi").max(100).trim(),
@@ -62,4 +62,19 @@ export const paymentUpdateSchema = z.object({
 
 export const serviceStatusSchema = z.object({
   status: z.nativeEnum(ServiceStatus),
+});
+
+export const userSchema = z.object({
+  username: z.string().min(3, "Username minimal 3 karakter").max(50).trim().toLowerCase(),
+  name: z.string().max(100).trim().optional().or(z.literal("")),
+  password: z.string().min(6, "Password minimal 6 karakter"),
+  role: z.nativeEnum(Role),
+  komisiPersen: z.number().int().min(0, "Komisi minimal 0%").max(100, "Komisi maksimal 100%"),
+});
+
+export const userUpdateSchema = z.object({
+  name: z.string().max(100).trim().optional().or(z.literal("")),
+  password: z.string().min(6, "Password minimal 6 karakter").optional().or(z.literal("")),
+  role: z.nativeEnum(Role),
+  komisiPersen: z.number().int().min(0, "Komisi minimal 0%").max(100, "Komisi maksimal 100%"),
 });

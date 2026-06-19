@@ -2,6 +2,7 @@
 
 import "server-only";
 
+import bcrypt from "bcryptjs";
 import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -17,6 +18,7 @@ import {
   updateServicePayment,
 } from "@/lib/data/service-orders";
 import { updateSettings } from "@/lib/data/settings";
+import prisma from "@/lib/prisma";
 import { normalizePhone } from "@/lib/utils";
 import {
   customerSchema,
@@ -26,6 +28,8 @@ import {
   serviceOrderUpdateSchema,
   servicePartSchema,
   serviceStatusSchema,
+  userSchema,
+  userUpdateSchema,
 } from "@/lib/validations";
 
 // ── Helpers ──
@@ -374,5 +378,140 @@ export async function updateSettingsAction(
 
   revalidatePath("/settings");
   updateTag("settings");
+  return { success: true };
+}
+
+// ── User Management ──
+
+export async function createUserAction(
+  prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData,
+) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "kasir") return { error: "Unauthorized" };
+
+  const username = formData.get("username");
+  const name = formData.get("name") || undefined;
+  const password = formData.get("password");
+  const role = formData.get("role");
+  const komisiPersen = formData.get("komisiPersen") ? Number(formData.get("komisiPersen")) : undefined;
+
+  const parsed = userSchema.safeParse({
+    username,
+    name,
+    password,
+    role,
+    komisiPersen,
+  });
+
+  if (!parsed.success) {
+    const first = Object.values(parsed.error.flatten().fieldErrors).flat()[0];
+    return { error: first || "Validasi gagal" };
+  }
+
+  // Cek keunikan username
+  const existing = await prisma.user.findUnique({
+    where: { username: parsed.data.username },
+  });
+  if (existing) {
+    return { error: "Username sudah terdaftar" };
+  }
+
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+
+  await prisma.user.create({
+    data: {
+      username: parsed.data.username,
+      name: parsed.data.name || null,
+      passwordHash,
+      role: parsed.data.role,
+      komisiPersen: parsed.data.komisiPersen,
+    },
+  });
+
+  revalidatePath("/teknisi");
+  return { success: true };
+}
+
+export async function updateUserAction(
+  prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData,
+) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "kasir") return { error: "Unauthorized" };
+
+  const id = Number(formData.get("id"));
+  if (!id) return { error: "ID user tidak valid" };
+
+  const name = formData.get("name") || undefined;
+  const password = formData.get("password") || undefined;
+  const role = formData.get("role");
+  const komisiPersen = formData.get("komisiPersen") ? Number(formData.get("komisiPersen")) : undefined;
+
+  const parsed = userUpdateSchema.safeParse({
+    name,
+    password,
+    role,
+    komisiPersen,
+  });
+
+  if (!parsed.success) {
+    const first = Object.values(parsed.error.flatten().fieldErrors).flat()[0];
+    return { error: first || "Validasi gagal" };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) return { error: "User tidak ditemukan" };
+
+  const data: Record<string, unknown> = {
+    name: parsed.data.name || null,
+    role: parsed.data.role,
+    komisiPersen: parsed.data.komisiPersen,
+  };
+
+  if (parsed.data.password) {
+    data.passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  }
+
+  await prisma.user.update({
+    where: { id },
+    data,
+  });
+
+  revalidatePath("/teknisi");
+  return { success: true };
+}
+
+export async function deleteUserAction(
+  prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData,
+) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "kasir") return { error: "Unauthorized" };
+
+  const id = Number(formData.get("id"));
+  if (!id) return { error: "ID user tidak valid" };
+
+  // Cegah menghapus diri sendiri
+  if (session.user.id && Number(session.user.id) === id) {
+    return { error: "Anda tidak bisa menghapus akun Anda sendiri" };
+  }
+
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) return { error: "User tidak ditemukan" };
+
+  // Cegah menghapus admin terakhir
+  if (user.role === "kasir") {
+    const adminCount = await prisma.user.count({
+      where: { role: "kasir" },
+    });
+    if (adminCount <= 1) {
+      return { error: "Tidak dapat menghapus admin terakhir sistem" };
+    }
+  }
+
+  await prisma.user.delete({ where: { id } });
+
+  revalidatePath("/teknisi");
   return { success: true };
 }

@@ -31,6 +31,7 @@ model User {
   passwordHash String
   name         String?
   role         Role     @default(teknisi)
+  komisiPersen Int      @default(40)
   createdAt    DateTime @default(now())
   assignments  ServiceOrder[]
 }

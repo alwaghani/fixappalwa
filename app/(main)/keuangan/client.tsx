@@ -365,10 +365,18 @@ export function KeuanganClient({
         <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <TrendingUp className="h-3.5 w-3.5 text-accents-green" /> Analisa Laba
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-5">
           <div className="rounded-lg bg-muted/20 p-3.5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Total Laba</p>
-            <p className="text-lg font-semibold text-accents-green">{formatHarga(profitStats.totalProfit)}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Laba Kotor</p>
+            <p className="text-lg font-semibold text-foreground">{formatHarga(profitStats.totalProfit)}</p>
+          </div>
+          <div className="rounded-lg bg-muted/20 p-3.5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Komisi Teknisi</p>
+            <p className="text-lg font-semibold text-accents-orange">{formatHarga(profitStats.totalKomisi)}</p>
+          </div>
+          <div className="rounded-lg bg-muted/20 p-3.5 bg-accents-green/5 border border-accents-green/20">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accents-green mb-1">Laba Bersih Toko</p>
+            <p className="text-lg font-bold text-accents-green">{formatHarga(profitStats.totalLabaBersih)}</p>
           </div>
           <div className="rounded-lg bg-muted/20 p-3.5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Margin Rata-rata</p>
@@ -396,34 +404,27 @@ export function KeuanganClient({
         ) : (
           <div className="divide-y divide-border/60 rounded-xl overflow-hidden border border-border/60">
             <div className="grid grid-cols-12 gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 bg-muted/20">
-              <span className="col-span-4">Customer / Device</span>
+              <span className="col-span-4">Customer / Device / Teknisi</span>
               <span className="col-span-2 text-right">Revenue</span>
               <span className="col-span-2 text-right">Modal</span>
-              <span className="col-span-2 text-right">Laba</span>
-              <span className="col-span-2 text-right">Margin</span>
+              <span className="col-span-2 text-right">Laba Kotor</span>
+              <span className="col-span-2 text-right">Laba Bersih</span>
             </div>
             {profitStats.topServices.map((s) => (
               <div key={s.id} className="grid grid-cols-12 gap-2 px-4 py-2.5 text-xs hover:bg-muted/20 transition-colors">
                 <div className="col-span-4 min-w-0">
                   <p className="text-foreground font-medium truncate">{s.customer}</p>
-                  <p className="text-muted-foreground/60 truncate text-[10px]">{s.merk} {s.tipe}</p>
+                  <p className="text-muted-foreground/60 truncate text-[10px]">
+                    {s.merk} {s.tipe} {s.teknisiName ? `• ${s.teknisiName} (Kms: ${formatHarga(s.komisi)})` : ""}
+                  </p>
                 </div>
                 <p className="col-span-2 text-right text-foreground self-center">{formatHarga(s.biayaFinal)}</p>
                 <p className="col-span-2 text-right text-muted-foreground self-center">{formatHarga(s.modalPart)}</p>
-                <p className="col-span-2 text-right font-medium self-center" style={{ color: s.profit >= 0 ? "var(--color-accents-green)" : "var(--color-destructive)" }}>
+                <p className="col-span-2 text-right font-medium self-center" style={{ color: s.profit >= 0 ? "var(--color-foreground)" : "var(--color-destructive)" }}>
                   {formatHarga(s.profit)}
                 </p>
-                <p className="col-span-2 text-right self-center">
-                  <span className={clsx(
-                    "rounded px-1.5 py-0.5 text-[10px] font-bold",
-                    s.margin >= 50
-                      ? "bg-accents-green/15 text-accents-green"
-                      : s.margin >= 25
-                      ? "bg-accents-blue/15 text-accents-blue"
-                      : "bg-muted/50 text-muted-foreground",
-                  )}>
-                    {s.margin}%
-                  </span>
+                <p className="col-span-2 text-right font-medium self-center text-accents-green">
+                  {formatHarga(s.labaBersih)}
                 </p>
               </div>
             ))}

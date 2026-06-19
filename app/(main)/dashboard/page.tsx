@@ -90,14 +90,18 @@ function BottomStatsSkeleton() {
 
 // ── Async Data Components ──
 
-async function StatsCards() {
-  const data = await getDashboardData();
+async function StatsCards({ teknisiId }: { teknisiId?: number }) {
+  const data = await getDashboardData(teknisiId);
   const cards = [
     { label: "Diterima", value: data.diterima, icon: ClipboardList },
     { label: "Menunggu Part", value: data.menungguPart, icon: AlertTriangle },
     { label: "Dikerjakan", value: data.dikerjakan, icon: Clock },
     { label: "Selesai", value: data.selesai, icon: CheckCircle2 },
-    { label: "Revenue Bulan Ini", value: formatHarga(data.revenueBulanIni), icon: Wallet },
+    { 
+      label: teknisiId ? "Komisi Bulan Ini" : "Revenue Bulan Ini", 
+      value: formatHarga(data.revenueBulanIni), 
+      icon: Wallet 
+    },
   ];
 
   return (
@@ -123,8 +127,8 @@ async function StatsCards() {
   );
 }
 
-async function RevenueChart() {
-  const data = await getDashboardData();
+async function RevenueChart({ teknisiId }: { teknisiId?: number }) {
+  const data = await getDashboardData(teknisiId);
   if (!data.monthlyRevenue || !data.monthlyRevenue.some((m) => m.revenue > 0)) return null;
 
   const maxRev = Math.max(...data.monthlyRevenue.map((x) => x.revenue), 0);
@@ -132,7 +136,9 @@ async function RevenueChart() {
   return (
     <div className="bg-card/80 rounded-xl p-5 border border-border/40 backdrop-blur-sm">
       <div className="flex items-center justify-between mb-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Revenue 6 Bulan</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          {teknisiId ? "Komisi 6 Bulan" : "Revenue 6 Bulan"}
+        </p>
         <span className="num text-xs text-muted-foreground/50">{formatHarga(data.revenueBulanIni)}</span>
       </div>
       <div className="flex items-end gap-2 h-24">
@@ -161,8 +167,8 @@ async function RevenueChart() {
   );
 }
 
-async function ActiveServices() {
-  const data = await getDashboardData();
+async function ActiveServices({ teknisiId }: { teknisiId?: number }) {
+  const data = await getDashboardData(teknisiId);
 
   return (
     <section>
@@ -212,8 +218,8 @@ async function ActiveServices() {
   );
 }
 
-async function CompletedSection() {
-  const data = await getDashboardData();
+async function CompletedSection({ teknisiId }: { teknisiId?: number }) {
+  const data = await getDashboardData(teknisiId);
 
   return (
     <section>
@@ -252,8 +258,8 @@ async function CompletedSection() {
   );
 }
 
-async function BottomStats() {
-  const data = await getDashboardData();
+async function BottomStats({ teknisiId }: { teknisiId?: number }) {
+  const data = await getDashboardData(teknisiId);
 
   return (
     <div className="flex items-center gap-6 py-4 border-t border-border/30">
@@ -262,7 +268,9 @@ async function BottomStats() {
           <Users className="h-3.5 w-3.5" />
         </div>
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">Total Customer</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">
+            {teknisiId ? "Customer Ditangani" : "Total Customer"}
+          </p>
           <p className="num text-base font-semibold text-foreground">{data.totalCustomers}</p>
         </div>
       </div>
@@ -272,7 +280,9 @@ async function BottomStats() {
           <Wrench className="h-3.5 w-3.5" />
         </div>
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">Total Service</p>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/50">
+            {teknisiId ? "Service Ditugaskan" : "Total Service"}
+          </p>
           <p className="num text-base font-semibold text-foreground">{data.total}</p>
         </div>
       </div>
@@ -285,6 +295,9 @@ async function BottomStats() {
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const isTeknisi = session.user.role === "teknisi";
+  const teknisiId = isTeknisi && session.user.id ? Number(session.user.id) : undefined;
 
   return (
     <div className="space-y-6">
@@ -301,27 +314,27 @@ export default async function DashboardPage() {
 
       {/* Stats Cards Grid — streamed */}
       <Suspense fallback={<StatsCardsSkeleton />}>
-        <StatsCards />
+        <StatsCards teknisiId={teknisiId} />
       </Suspense>
 
       {/* Mini Revenue Chart — streamed */}
       <Suspense fallback={<ChartSkeleton />}>
-        <RevenueChart />
+        <RevenueChart teknisiId={teknisiId} />
       </Suspense>
 
       {/* Active Services — streamed */}
       <Suspense fallback={<ListSectionSkeleton />}>
-        <ActiveServices />
+        <ActiveServices teknisiId={teknisiId} />
       </Suspense>
 
       {/* Completed History — streamed */}
       <Suspense fallback={<ListSectionSkeleton />}>
-        <CompletedSection />
+        <CompletedSection teknisiId={teknisiId} />
       </Suspense>
 
       {/* Bottom Stats Bar — streamed */}
       <Suspense fallback={<BottomStatsSkeleton />}>
-        <BottomStats />
+        <BottomStats teknisiId={teknisiId} />
       </Suspense>
     </div>
   );

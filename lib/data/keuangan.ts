@@ -183,6 +183,8 @@ export type ProfitStats = {
   totalModal: number;
   marginPercent: number;
   serviceCount: number;
+  totalKomisi: number;
+  totalLabaBersih: number;
   topServices: Array<{
     id: number;
     noService: string;
@@ -193,6 +195,9 @@ export type ProfitStats = {
     modalPart: number;
     profit: number;
     margin: number;
+    teknisiName: string | null;
+    komisi: number;
+    labaBersih: number;
   }>;
 };
 
@@ -218,6 +223,7 @@ export const getProfitStats = cache(async (
     include: {
       customer: { select: { nama: true } },
       parts: { select: { hargaPokok: true } },
+      teknisi: { select: { name: true, username: true, komisiPersen: true } },
     },
     orderBy: { lunasAt: "desc" },
   });
@@ -225,7 +231,14 @@ export const getProfitStats = cache(async (
   const entries = orders.map((o) => {
     const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
     const revenue = o.biayaFinal ?? 0;
-    const profit = revenue - modalPart;
+    const profit = revenue - modalPart; // Laba Kotor
+
+    let komisi = 0;
+    if (o.teknisi) {
+      komisi = Math.round(profit * (o.teknisi.komisiPersen / 100));
+    }
+    const labaBersih = profit - komisi;
+
     return {
       id: o.id,
       noService: o.noService,
@@ -236,12 +249,17 @@ export const getProfitStats = cache(async (
       modalPart,
       profit,
       margin: revenue > 0 ? Math.round((profit / revenue) * 100) : 0,
+      teknisiName: o.teknisi ? (o.teknisi.name || o.teknisi.username) : null,
+      komisi,
+      labaBersih,
     };
   });
 
   const totalRevenue = entries.reduce((s, e) => s + e.biayaFinal, 0);
   const totalModal = entries.reduce((s, e) => s + e.modalPart, 0);
   const totalProfit = entries.reduce((s, e) => s + e.profit, 0);
+  const totalKomisi = entries.reduce((s, e) => s + e.komisi, 0);
+  const totalLabaBersih = totalProfit - totalKomisi;
 
   const topServices = entries
     .sort((a, b) => b.profit - a.profit)
@@ -253,6 +271,8 @@ export const getProfitStats = cache(async (
     totalModal,
     marginPercent: totalRevenue > 0 ? Math.round((totalProfit / totalRevenue) * 100) : 0,
     serviceCount: entries.length,
+    totalKomisi,
+    totalLabaBersih,
     topServices,
   };
 });

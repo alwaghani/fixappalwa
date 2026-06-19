@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Settings,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -33,6 +34,7 @@ const navItems = [
   { href: "/services", label: "Daftar Service", icon: ClipboardList },
   { href: "/services/new", label: "Service Baru", icon: PlusCircle },
   { href: "/customers", label: "Customer", icon: Users },
+  { href: "/teknisi", label: "Teknisi", icon: UserCheck },
   { href: "/keuangan", label: "Keuangan", icon: Wallet },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ];
@@ -50,7 +52,7 @@ export default function Sidebar({
   const role = session?.user?.role;
 
   const filteredNav = navItems.filter((item) => {
-    if (item.href === "/keuangan" || item.href === "/settings") {
+    if (item.href === "/keuangan" || item.href === "/settings" || item.href === "/teknisi") {
       return role === "kasir";
     }
     return true;
