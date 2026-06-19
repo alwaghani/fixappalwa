@@ -142,6 +142,7 @@ export function ServiceDetailClient({
   teknisiList: Array<{ id: number; name: string | null; username: string; role: string }>;
 }) {
   const router = useRouter();
+  const isStaff = userRole === "kasir" || userRole === "admin";
   const [isPending, startTransition] = useTransition();
   const [currentOrder, setCurrentOrder] = useState(order);
   const [prevOrder, setPrevOrder] = useState(order);
@@ -230,7 +231,7 @@ export function ServiceDetailClient({
         e.preventDefault();
         setEditingService((prev) => !prev);
       }
-      if ((e.key === "p" || e.key === "P") && userRole === "kasir") {
+      if ((e.key === "p" || e.key === "P") && isStaff) {
         e.preventDefault();
         openPaymentDialog();
       }
@@ -241,7 +242,7 @@ export function ServiceDetailClient({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [router, userRole, openPaymentDialog]);
+  }, [router, isStaff, openPaymentDialog]);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -1172,7 +1173,7 @@ export function ServiceDetailClient({
               <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 <Banknote className="h-4 w-4 text-primary" /> Rincian Biaya
               </h2>
-              {userRole === "kasir" && (
+              {isStaff && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -1215,7 +1216,7 @@ export function ServiceDetailClient({
                 )}
               </div>
 
-              {userRole === "kasir" && totalModal > 0 && laba !== null && (
+              {isStaff && totalModal > 0 && laba !== null && (
                 <div className="flex items-center justify-between rounded-xl bg-accents-green/10 px-3.5 py-2.5 text-xs font-bold text-accents-green border border-accents-green/20">
                   <span className="flex items-center gap-1">
                     <CheckCircle2 className="h-4 w-4" /> Estimasi Profit (Laba)
@@ -1223,7 +1224,7 @@ export function ServiceDetailClient({
                   <span>{formatHarga(laba)}</span>
                 </div>
               )}
-              {userRole === "kasir" && totalModal > 0 && laba === null && (
+              {isStaff && totalModal > 0 && laba === null && (
                 <div className="flex items-center justify-between rounded-xl bg-muted/10 px-3.5 py-2.5 text-xs text-muted-foreground border border-border/30">
                   <span>Estimasi Profit (Laba)</span>
                   <span>(tentukan biaya final)</span>
@@ -1259,12 +1260,12 @@ export function ServiceDetailClient({
           </div>
 
           {/* Teknisi Assignment */}
-          {(userRole === "kasir" || currentOrder.teknisi) && (
+          {(isStaff || currentOrder.teknisi) && (
             <div className="rounded-xl bg-muted/10 p-5">
               <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 border-b border-border pb-3">
                 <Wrench className="h-4 w-4 text-accents-warm" /> Teknisi
               </h2>
-              {userRole === "kasir" ? (
+              {isStaff ? (
                 <select
                   name="teknisiId"
                   value={currentOrder.teknisi?.id ?? ""}
@@ -1274,7 +1275,7 @@ export function ServiceDetailClient({
                   <option value="">Pilih teknisi...</option>
                   {teknisiList.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.name || t.username} {t.role === "kasir" ? "(Admin)" : "(Teknisi)"}
+                      {t.name || t.username} {t.role === "admin" ? "(Admin)" : t.role === "kasir" ? "(Kasir)" : "(Teknisi)"}
                     </option>
                   ))}
                   <option value="">— Hapus —</option>
@@ -1393,7 +1394,7 @@ export function ServiceDetailClient({
           <Printer className="h-4 w-4" />
           Cetak Invoice
         </button>
-        {userRole === "kasir" && (
+        {isStaff && (
           <button
             type="button"
             onClick={() => setConfirmDeleteOrder(true)}

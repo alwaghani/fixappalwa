@@ -14,7 +14,7 @@ async function SettingsContent() {
 
 export default async function SettingsPage() {
   const session = await auth();
-  if (session?.user?.role !== "kasir") {
+  if (session?.user?.role !== "admin") {
     redirect("/dashboard");
   }
 

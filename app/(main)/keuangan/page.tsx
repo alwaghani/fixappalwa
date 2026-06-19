@@ -34,7 +34,7 @@ export default async function KeuanganPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const session = await auth();
-  if (session?.user?.role !== "kasir") {
+  if (session?.user?.role !== "kasir" && session?.user?.role !== "admin") {
     redirect("/dashboard");
   }
 

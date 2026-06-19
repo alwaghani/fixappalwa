@@ -21,6 +21,7 @@ enum PaymentStatus {
 }
 
 enum Role {
+  admin
   kasir
   teknisi
 }

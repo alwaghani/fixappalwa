@@ -390,7 +390,7 @@ export function NewServiceClient({
             <option value="">Pilih teknisi...</option>
             {teknisiList.map((t) => (
               <option key={t.id} value={t.id}>
-                {t.name || t.username} {t.role === "kasir" ? "(Admin)" : "(Teknisi)"}
+                {t.name || t.username} {t.role === "admin" ? "(Admin)" : t.role === "kasir" ? "(Kasir)" : "(Teknisi)"}
               </option>
             ))}
           </select>

@@ -115,7 +115,7 @@ export function TeknisiClient({ users }: { users: User[] }) {
             <DialogHeader>
               <DialogTitle>Tambah User Baru</DialogTitle>
               <DialogDescription>
-                Daftarkan akun karyawan baru (Admin/Kasir atau Teknisi) ke dalam sistem.
+                Daftarkan akun karyawan baru (Admin, Kasir, atau Teknisi) ke dalam sistem.
               </DialogDescription>
             </DialogHeader>
 
@@ -171,8 +171,9 @@ export function TeknisiClient({ users }: { users: User[] }) {
                     className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:ring-2 focus:ring-primary/25 focus:border-primary/50"
                     required
                   >
+                    <option value="admin">Admin</option>
+                    <option value="kasir">Kasir</option>
                     <option value="teknisi">Teknisi</option>
-                    <option value="kasir">Admin / Kasir</option>
                   </select>
                 </div>
 
@@ -248,11 +249,13 @@ export function TeknisiClient({ users }: { users: User[] }) {
                       </span>
                       <span className="text-muted-foreground/30 text-[10px]">•</span>
                       <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
-                        u.role === "kasir"
-                          ? "bg-accents-blue/10 text-accents-blue border-accents-blue/20"
-                          : "bg-primary/10 text-primary border-primary/20"
+                        u.role === "admin"
+                          ? "bg-destructive/10 text-destructive border-destructive/20"
+                          : u.role === "kasir"
+                            ? "bg-accents-blue/10 text-accents-blue border-accents-blue/20"
+                            : "bg-primary/10 text-primary border-primary/20"
                       }`}>
-                        {u.role === "kasir" ? "Admin / Kasir" : "Teknisi"}
+                        {u.role === "admin" ? "Admin" : u.role === "kasir" ? "Kasir" : "Teknisi"}
                       </span>
                       {u.role === "teknisi" && (
                         <>
@@ -353,8 +356,9 @@ export function TeknisiClient({ users }: { users: User[] }) {
                   className="w-full rounded-lg border border-border bg-input px-3 py-2.5 text-sm text-foreground outline-none transition-colors focus:ring-2 focus:ring-primary/25 focus:border-primary/50"
                   required
                 >
+                  <option value="admin">Admin</option>
+                  <option value="kasir">Kasir</option>
                   <option value="teknisi">Teknisi</option>
-                  <option value="kasir">Admin / Kasir</option>
                 </select>
               </div>
 

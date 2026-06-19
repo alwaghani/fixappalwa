@@ -248,7 +248,7 @@ export async function updatePaymentAction(
 ) {
   const session = await auth();
   if (!session?.user) return { error: "Unauthorized" };
-  if (session.user.role !== "kasir") return { error: "Akses ditolak (Hanya Kasir)" };
+  if (session.user.role !== "kasir" && session.user.role !== "admin") return { error: "Akses ditolak" };
 
   const parsed = paymentUpdateSchema.safeParse({
     id: Number(formData.get("id")),
@@ -284,7 +284,7 @@ export async function assignTeknisiAction(
   formData: FormData,
 ): Promise<{ error?: string; success?: boolean }> {
   const session = await auth();
-  if (!session?.user || session.user.role !== "kasir") return { error: "Unauthorized" };
+  if (!session?.user || (session.user.role !== "kasir" && session.user.role !== "admin")) return { error: "Unauthorized" };
 
   const id = Number(formData.get("id"));
   if (!id) return { error: "ID tidak valid" };
@@ -333,7 +333,7 @@ export async function deleteServiceOrderAction(
 ) {
   const session = await auth();
   if (!session?.user) return { error: "Unauthorized" };
-  if (session.user.role !== "kasir") return { error: "Akses ditolak (Hanya Kasir)" };
+  if (session.user.role !== "kasir" && session.user.role !== "admin") return { error: "Akses ditolak" };
 
   const id = Number(formData.get("id"));
   if (!id) return { error: "ID tidak valid" };
@@ -354,7 +354,7 @@ export async function updateSettingsAction(
 ) {
   const session = await auth();
   if (!session?.user) return { error: "Unauthorized" };
-  if (session.user.role !== "kasir") return { error: "Akses ditolak (Hanya Kasir)" };
+  if (session.user.role !== "admin") return { error: "Akses ditolak (Hanya Admin)" };
 
   const nama_toko = formData.get("nama_toko") as string;
   const alamat = formData.get("alamat") as string;
@@ -388,7 +388,7 @@ export async function createUserAction(
   formData: FormData,
 ) {
   const session = await auth();
-  if (!session?.user || session.user.role !== "kasir") return { error: "Unauthorized" };
+  if (!session?.user || session.user.role !== "admin") return { error: "Unauthorized" };
 
   const username = formData.get("username");
   const name = formData.get("name") || undefined;
@@ -438,7 +438,7 @@ export async function updateUserAction(
   formData: FormData,
 ) {
   const session = await auth();
-  if (!session?.user || session.user.role !== "kasir") return { error: "Unauthorized" };
+  if (!session?.user || session.user.role !== "admin") return { error: "Unauthorized" };
 
   const id = Number(formData.get("id"));
   if (!id) return { error: "ID user tidak valid" };
@@ -487,7 +487,7 @@ export async function deleteUserAction(
   formData: FormData,
 ) {
   const session = await auth();
-  if (!session?.user || session.user.role !== "kasir") return { error: "Unauthorized" };
+  if (!session?.user || session.user.role !== "admin") return { error: "Unauthorized" };
 
   const id = Number(formData.get("id"));
   if (!id) return { error: "ID user tidak valid" };
@@ -501,9 +501,9 @@ export async function deleteUserAction(
   if (!user) return { error: "User tidak ditemukan" };
 
   // Cegah menghapus admin terakhir
-  if (user.role === "kasir") {
+  if (user.role === "admin") {
     const adminCount = await prisma.user.count({
-      where: { role: "kasir" },
+      where: { role: "admin" },
     });
     if (adminCount <= 1) {
       return { error: "Tidak dapat menghapus admin terakhir sistem" };

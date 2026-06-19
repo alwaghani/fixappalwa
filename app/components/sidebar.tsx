@@ -52,8 +52,11 @@ export default function Sidebar({
   const role = session?.user?.role;
 
   const filteredNav = navItems.filter((item) => {
-    if (item.href === "/keuangan" || item.href === "/settings" || item.href === "/teknisi") {
-      return role === "kasir";
+    if (item.href === "/keuangan") {
+      return role === "admin" || role === "kasir";
+    }
+    if (item.href === "/settings" || item.href === "/teknisi") {
+      return role === "admin";
     }
     return true;
   });

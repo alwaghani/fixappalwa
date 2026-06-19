@@ -14,7 +14,7 @@ async function TeknisiContent() {
 
 export default async function TeknisiPage() {
   const session = await auth();
-  if (session?.user?.role !== "kasir") {
+  if (session?.user?.role !== "admin") {
     redirect("/dashboard");
   }
 
