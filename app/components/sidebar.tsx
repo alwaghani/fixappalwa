@@ -133,7 +133,37 @@ export default function Sidebar({
         })}
       </nav>
 
-      <div className="border-t border-sidebar-border px-2.5 py-3">
+      <div className="border-t border-sidebar-border px-2.5 py-3 space-y-3">
+        {session?.user && (
+          <div
+            className={clsx(
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl bg-muted/5 border border-border/10",
+              isOpen ? "" : "justify-center px-1"
+            )}
+            title={`${session.user.name || "User"} (${role ? role.toUpperCase() : ""})`}
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary">
+              {(session.user.name || "U").slice(0, 2).toUpperCase()}
+            </div>
+            {isOpen && (
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-foreground truncate leading-none">
+                  {session.user.name || "User"}
+                </p>
+                <span className={`inline-block text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full border mt-1.5 ${
+                  role === "admin"
+                    ? "bg-destructive/10 text-destructive border-destructive/20"
+                    : role === "kasir"
+                      ? "bg-accents-blue/10 text-accents-blue border-accents-blue/20"
+                      : "bg-primary/10 text-primary border-primary/20"
+                }`}>
+                  {role === "admin" ? "Admin" : role === "kasir" ? "Kasir" : "Teknisi"}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         <button
           onClick={() => setConfirmLogout(true)}
           className={clsx(
