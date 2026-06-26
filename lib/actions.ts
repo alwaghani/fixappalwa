@@ -515,3 +515,113 @@ export async function deleteUserAction(
   revalidatePath("/teknisi");
   return { success: true };
 }
+
+export async function getUserPerformanceAction(userId: number) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "admin") {
+    return { error: "Unauthorized" };
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        role: true,
+        komisiPersen: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return { error: "User tidak ditemukan" };
+    }
+
+    const serviceOrders = await prisma.serviceOrder.findMany({
+      where: { teknisiId: userId },
+      include: {
+        parts: {
+          select: {
+            hargaPokok: true,
+            harga: true,
+            nama: true,
+          },
+        },
+        customer: {
+          select: {
+            nama: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const totalAssigned = serviceOrders.length;
+    const activeOrdersList = serviceOrders.filter((o) => o.status !== "selesai");
+    const completedOrdersList = serviceOrders.filter((o) => o.status === "selesai");
+
+    let totalRevenue = 0;
+    let totalCommissionLunas = 0;
+    let totalCommissionBelumLunas = 0;
+    let totalModalPartCompleted = 0;
+
+    const formattedOrders = serviceOrders.map((o) => {
+      const modalPart = o.parts.reduce((sum, p) => sum + (p.hargaPokok ?? 0), 0);
+      const revenue = o.biayaFinal ?? 0;
+      const profit = Math.max(0, revenue - modalPart);
+      
+      const persenKomisi = user.role === "admin" ? 0 : user.komisiPersen;
+      const komisi = o.status === "selesai" ? Math.round(profit * (persenKomisi / 100)) : 0;
+
+      if (o.status === "selesai") {
+        totalRevenue += revenue;
+        totalModalPartCompleted += modalPart;
+        if (o.statusBayar === "LUNAS") {
+          totalCommissionLunas += komisi;
+        } else {
+          totalCommissionBelumLunas += komisi;
+        }
+      }
+
+      return {
+        id: o.id,
+        noService: o.noService,
+        customerName: o.customer.nama,
+        merk: o.merk,
+        tipe: o.tipe,
+        status: o.status,
+        statusBayar: o.statusBayar,
+        biayaFinal: o.biayaFinal,
+        dpNominal: o.dpNominal,
+        estimasiBiaya: o.estimasiBiaya,
+        modalPart,
+        profit,
+        komisi,
+        createdAt: o.createdAt.toISOString(),
+      };
+    });
+
+    return {
+      success: true,
+      data: {
+        user,
+        stats: {
+          totalAssigned,
+          activeCount: activeOrdersList.length,
+          completedCount: completedOrdersList.length,
+          totalRevenue,
+          totalModalPartCompleted,
+          totalCommissionLunas,
+          totalCommissionBelumLunas,
+        },
+        orders: formattedOrders,
+      },
+    };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Gagal memuat detail kinerja";
+    return { error: errorMsg };
+  }
+}
+
