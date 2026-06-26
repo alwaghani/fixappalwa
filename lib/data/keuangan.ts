@@ -276,3 +276,69 @@ export const getProfitStats = cache(async (
     topServices,
   };
 });
+
+export type TransactionDetail = {
+  id: number;
+  amount: number;
+  type: string;
+  category: string;
+  description: string;
+  createdAt: Date;
+  serviceOrderNo?: string | null;
+};
+
+export const getTransactions = cache(async (
+  bulan?: number,
+  tahun?: number,
+  startDate?: Date,
+  endDate?: Date,
+): Promise<TransactionDetail[]> => {
+  const now = new Date();
+  const month = bulan ?? now.getMonth() + 1;
+  const year = tahun ?? now.getFullYear();
+
+  const monthStart = startDate ?? new Date(year, month - 1, 1);
+  const monthEnd = endDate ?? new Date(year, month, 0, 23, 59, 59, 999);
+
+  const txs = await prisma.cashTransaction.findMany({
+    where: {
+      createdAt: { gte: monthStart, lte: monthEnd },
+    },
+    include: {
+      serviceOrder: { select: { noService: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return txs.map((t) => ({
+    id: t.id,
+    amount: t.amount,
+    type: t.type,
+    category: t.category,
+    description: t.description,
+    createdAt: t.createdAt,
+    serviceOrderNo: t.serviceOrder?.noService ?? null,
+  }));
+});
+
+export const getCashAudits = cache(async (
+  bulan?: number,
+  tahun?: number,
+  startDate?: Date,
+  endDate?: Date,
+) => {
+  const now = new Date();
+  const month = bulan ?? now.getMonth() + 1;
+  const year = tahun ?? now.getFullYear();
+
+  const monthStart = startDate ?? new Date(year, month - 1, 1);
+  const monthEnd = endDate ?? new Date(year, month, 0, 23, 59, 59, 999);
+
+  return prisma.cashAudit.findMany({
+    where: {
+      createdAt: { gte: monthStart, lte: monthEnd },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+});
+

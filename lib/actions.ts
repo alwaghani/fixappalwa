@@ -625,3 +625,124 @@ export async function getUserPerformanceAction(userId: number) {
   }
 }
 
+export async function createManualTransactionAction(
+  prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData,
+) {
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "kasir")) {
+    return { error: "Unauthorized" };
+  }
+
+  const type = formData.get("type"); // "IN" | "OUT"
+  const amountRupiah = formData.get("amount"); // Rupiah string
+  const category = formData.get("category") || "LAINNYA"; // "DP", "PELUNASAN", "SPAREPART", "LAINNYA"
+  const description = formData.get("description");
+
+  if (!type || (type !== "IN" && type !== "OUT")) {
+    return { error: "Tipe transaksi harus masuk (IN) atau keluar (OUT)" };
+  }
+
+  const amount = rupiahToSen(amountRupiah);
+  if (amount <= 0) {
+    return { error: "Nominal transaksi harus lebih dari Rp 0" };
+  }
+
+  if (!description || String(description).trim() === "") {
+    return { error: "Keterangan transaksi wajib diisi" };
+  }
+
+  try {
+    await prisma.cashTransaction.create({
+      data: {
+        amount,
+        type: type as string,
+        category: category as string,
+        description: String(description).trim(),
+      },
+    });
+
+    revalidatePath("/keuangan");
+    return { success: true };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Gagal menambahkan transaksi";
+    return { error: errorMsg };
+  }
+}
+
+export async function deleteManualTransactionAction(
+  prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData,
+) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "admin") {
+    return { error: "Hanya Admin yang berhak menghapus transaksi keuangan" };
+  }
+
+  const id = Number(formData.get("id"));
+  if (!id) {
+    return { error: "ID transaksi tidak valid" };
+  }
+
+  try {
+    const tx = await prisma.cashTransaction.findUnique({
+      where: { id },
+    });
+
+    if (!tx) {
+      return { error: "Transaksi tidak ditemukan" };
+    }
+
+    if (tx.serviceOrderId !== null || tx.servicePartId !== null) {
+      return { error: "Transaksi otomatis dari Order Service tidak dapat dihapus secara manual" };
+    }
+
+    await prisma.cashTransaction.delete({
+      where: { id },
+    });
+
+    revalidatePath("/keuangan");
+    return { success: true };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Gagal menghapus transaksi";
+    return { error: errorMsg };
+  }
+}
+
+export async function createCashAuditAction(
+  prevState: { error?: string; success?: boolean } | undefined,
+  formData: FormData,
+) {
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "admin" && session.user.role !== "kasir")) {
+    return { error: "Unauthorized" };
+  }
+
+  const expectedCashRupiah = formData.get("expectedCash");
+  const actualCashRupiah = formData.get("actualCash");
+  const catatan = formData.get("catatan");
+
+  const expectedCash = rupiahToSen(expectedCashRupiah);
+  const actualCash = rupiahToSen(actualCashRupiah);
+  const selisih = actualCash - expectedCash;
+
+  try {
+    await prisma.cashAudit.create({
+      data: {
+        expectedCash,
+        actualCash,
+        selisih,
+        catatan: catatan ? String(catatan).trim() : null,
+        createdBy: session.user.name || "Kasir",
+      },
+    });
+
+    revalidatePath("/keuangan");
+    return { success: true };
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : "Gagal mencatat audit kas harian";
+    return { error: errorMsg };
+  }
+}
+
+

@@ -116,3 +116,13 @@ model CashTransaction {
   servicePartId  Int?          @unique
   servicePart    ServicePart?  @relation(fields: [servicePartId], references: [id], onDelete: Cascade)
 }
+
+model CashAudit {
+  id           Int      @id @default(autoincrement())
+  expectedCash Int      // uang laci teoretis (dalam sen)
+  actualCash   Int      // uang laci fisik riil (dalam sen)
+  selisih      Int      // actual - expected (dalam sen)
+  catatan      String?
+  createdAt    DateTime @default(now())
+  createdBy    String   // nama/username kasir
+}
