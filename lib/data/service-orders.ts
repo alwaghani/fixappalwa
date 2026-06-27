@@ -16,6 +16,14 @@ const orderInclude = {
   parts: true,
   activityLogs: {
     orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: {
+          name: true,
+          role: true,
+        },
+      },
+    },
   },
 } as const;
 
@@ -141,7 +149,7 @@ export async function createServiceOrder(data: {
   catatan?: string;
   estimasiSelesai?: Date;
   teknisiId?: number | null;
-}) {
+}, userId?: number) {
   const now = new Date();
   const datePrefix = String(now.getFullYear()).slice(2) + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0");
   const prefix = `SRV-${datePrefix}-`;
@@ -168,6 +176,7 @@ export async function createServiceOrder(data: {
             serviceOrderId: created.id,
             action: "ORDER_CREATED",
             detail: `Servis baru berhasil didaftarkan dengan nomor ${noService}.`,
+            userId: userId || null,
           },
         });
 
@@ -199,6 +208,7 @@ export async function updateServiceOrder(
     teknisiId?: number;
     estimasiSelesai?: Date | null;
   },
+  userId?: number,
 ) {
   const current = await prisma.serviceOrder.findUnique({
     where: { id },
@@ -223,6 +233,7 @@ export async function updateServiceOrder(
         serviceOrderId: id,
         action: "ORDER_UPDATED",
         detail: `Detail perangkat diperbarui: ${changes.join(", ")}`,
+        userId: userId || null,
       },
     });
   }
@@ -230,7 +241,7 @@ export async function updateServiceOrder(
   return updated;
 }
 
-export async function updateServiceStatus(id: number, status: ServiceStatus, warrantyDays?: number) {
+export async function updateServiceStatus(id: number, status: ServiceStatus, warrantyDays?: number, userId?: number) {
   const current = await prisma.serviceOrder.findUnique({
     where: { id },
     select: { status: true, warrantyUntil: true },
@@ -264,6 +275,7 @@ export async function updateServiceStatus(id: number, status: ServiceStatus, war
       serviceOrderId: id,
       action: "STATUS_CHANGED",
       detail: `Status pengerjaan diubah dari "${current.status.toUpperCase()}" ke "${status.toUpperCase()}"`,
+      userId: userId || null,
     },
   });
 
@@ -273,6 +285,7 @@ export async function updateServiceStatus(id: number, status: ServiceStatus, war
 export async function addServicePart(
   serviceOrderId: number,
   data: { nama: string; harga: number; hargaPokok?: number },
+  userId?: number,
 ) {
   const order = await prisma.serviceOrder.findUnique({
     where: { id: serviceOrderId },
@@ -302,13 +315,14 @@ export async function addServicePart(
       serviceOrderId,
       action: "PART_ADDED",
       detail: `Sparepart "${data.nama}" ditambahkan (Modal: ${formatHarga(data.hargaPokok ?? 0)}, Jual: ${formatHarga(data.harga)})`,
+      userId: userId || null,
     },
   });
 
   return part;
 }
 
-export async function deleteServicePart(id: number) {
+export async function deleteServicePart(id: number, userId?: number) {
   const part = await prisma.servicePart.findUnique({
     where: { id },
     select: { serviceOrderId: true, nama: true },
@@ -320,6 +334,7 @@ export async function deleteServicePart(id: number) {
         serviceOrderId: part.serviceOrderId,
         action: "PART_DELETED",
         detail: `Sparepart "${part.nama}" dihapus`,
+        userId: userId || null,
       },
     });
   }
@@ -339,6 +354,7 @@ export async function updateServicePayment(
     biayaFinal?: number;
     lunasAt?: Date | null;
   },
+  userId?: number,
 ) {
   const current = await prisma.serviceOrder.findUnique({
     where: { id },
@@ -495,6 +511,7 @@ export async function updateServicePayment(
       serviceOrderId: id,
       action: "PAYMENT_UPDATED",
       detail: detailMsg,
+      userId: userId || null,
     },
   });
 

@@ -35,6 +35,7 @@ model User {
   komisiPersen Int      @default(40)
   createdAt    DateTime @default(now())
   assignments  ServiceOrder[]
+  activityLogs ActivityLog[]
 }
 
 model Customer {
@@ -99,6 +100,7 @@ model ActivityLog {
   serviceOrderId Int
   serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
   userId         Int?
+  user           User?        @relation(fields: [userId], references: [id])
   action         String
   detail         String
   createdAt      DateTime     @default(now())

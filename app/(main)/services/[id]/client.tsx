@@ -1180,8 +1180,13 @@ export function ServiceDetailClient({
                     </span>
                     <div className="flex flex-col gap-0.5">
                       <div className="flex items-center justify-between gap-4">
-                        <span className="font-semibold text-foreground uppercase text-[10px] tracking-wider font-mono">
+                        <span className="font-semibold text-foreground uppercase text-[10px] tracking-wider font-mono flex items-center flex-wrap gap-1.5">
                           {log.action.replace("_", " ")}
+                          {log.user && (
+                            <span className="text-[9px] lowercase font-normal px-1 rounded bg-muted text-muted-foreground/80 border border-border/30">
+                              oleh {log.user.name || "Operator"} ({log.user.role})
+                            </span>
+                          )}
                         </span>
                         <span className="text-[10px] text-muted-foreground/50 shrink-0 font-mono">
                           {format(new Date(log.createdAt), "dd MMM yyyy HH:mm", { locale: localeId })}

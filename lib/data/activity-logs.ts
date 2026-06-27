@@ -1,9 +1,9 @@
 import "server-only";
 
-import type { Prisma } from "@/lib/generated/prisma/client";
 import { cacheLife, cacheTag } from "next/cache";
 import { cache } from "react";
 
+import type { Prisma } from "@/lib/generated/prisma/client";
 import prisma from "@/lib/prisma";
 
 export type ActivityLogFilter = {
@@ -45,6 +45,12 @@ export const getActivityLogs = cache(async (filters: ActivityLogFilter = {}) => 
       skip,
       take: limit,
       include: {
+        user: {
+          select: {
+            name: true,
+            role: true,
+          },
+        },
         serviceOrder: {
           select: {
             id: true,

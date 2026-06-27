@@ -36,6 +36,11 @@ type LogItem = {
   action: string;
   detail: string;
   createdAt: Date;
+  userId?: number | null;
+  user?: {
+    name: string | null;
+    role: string;
+  } | null;
   serviceOrder: {
     id: number;
     noService: string;
@@ -163,6 +168,7 @@ export function ActivityLogsClient({
               <TableHead className="w-[180px]">Tanggal & Waktu</TableHead>
               <TableHead className="w-[150px]">No. Servis</TableHead>
               <TableHead className="w-[200px]">Pelanggan / Perangkat</TableHead>
+              <TableHead className="w-[130px]">Operator</TableHead>
               <TableHead className="w-[150px]">Aktivitas</TableHead>
               <TableHead>Detail Perubahan</TableHead>
             </TableRow>
@@ -170,7 +176,7 @@ export function ActivityLogsClient({
           <TableBody>
             {initialLogs.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-48 text-center">
+                <TableCell colSpan={6} className="h-48 text-center">
                   <div className="flex flex-col items-center justify-center space-y-2.5">
                     <ClipboardList className="h-8 w-8 text-muted-foreground/25 animate-pulse" />
                     <p className="text-sm font-medium text-muted-foreground">
@@ -202,6 +208,18 @@ export function ActivityLogsClient({
                     <div className="text-[10px] text-muted-foreground/60 mt-0.5 truncate max-w-[180px] font-mono">
                       {log.serviceOrder.merk} {log.serviceOrder.tipe}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    {log.user ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="font-semibold text-foreground">{log.user.name || "Operator"}</span>
+                        <span className="text-[9px] uppercase tracking-wider text-muted-foreground/60 font-mono">
+                          {log.user.role}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50 italic">Sistem</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <span className={ACTION_BADGES[log.action] || "bg-black/20 text-muted-foreground border border-border"}>

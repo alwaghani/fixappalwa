@@ -136,7 +136,7 @@ export async function createServiceOrderAction(
   const order = await createServiceOrder({
     ...parsed.data,
     estimasiSelesai: parsed.data.estimasiSelesai ? new Date(parsed.data.estimasiSelesai) : undefined,
-  });
+  }, session.user.id ? Number(session.user.id) : undefined);
   revalidatePath("/services");
   redirect(`/services/${order.id}`);
 }
@@ -166,7 +166,7 @@ export async function addServicePartAction(
     nama: parsed.data.nama,
     harga: parsed.data.harga,
     ...(parsed.data.hargaPokok !== undefined ? { hargaPokok: parsed.data.hargaPokok } : {}),
-  });
+  }, session.user.id ? Number(session.user.id) : undefined);
   revalidatePath(`/services/${parsed.data.serviceOrderId}`);
   return { success: true, partId: part.id };
 }
@@ -184,7 +184,7 @@ export async function deleteServicePartAction(
   if (!partId || !orderId) return { error: "Data tidak valid" };
 
   try {
-    await deleteServicePart(partId);
+    await deleteServicePart(partId, session.user.id ? Number(session.user.id) : undefined);
   } catch {
     return { error: "Part tidak ditemukan" };
   }
@@ -235,7 +235,7 @@ export async function updateServiceOrderAction(
     data.estimasiSelesai = parsed.data.estimasiSelesai ? new Date(parsed.data.estimasiSelesai) : null;
   }
 
-  await updateServiceOrder(id, data);
+  await updateServiceOrder(id, data, session.user.id ? Number(session.user.id) : undefined);
   revalidatePath(`/services/${id}`);
   return { success: true };
 }
@@ -267,7 +267,7 @@ export async function updatePaymentAction(
       statusBayar: parsed.data.statusBayar,
       ...(parsed.data.dpNominal !== undefined ? { dpNominal: parsed.data.dpNominal } : {}),
       ...(parsed.data.biayaFinal !== undefined ? { biayaFinal: parsed.data.biayaFinal } : {}),
-    });
+    }, session.user.id ? Number(session.user.id) : undefined);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Gagal update pembayaran";
     return { error: message };
@@ -316,7 +316,7 @@ export async function updateServiceStatusAction(
   if (!parsed.success) return { error: "Status tidak valid" };
 
   try {
-    await updateServiceStatus(id, parsed.data.status, warrantyDays);
+    await updateServiceStatus(id, parsed.data.status, warrantyDays, session.user.id ? Number(session.user.id) : undefined);
   } catch {
     return { error: "Gagal update status" };
   }
