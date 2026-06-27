@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import html2canvas from "html2canvas";
 import {
   Smartphone,
   User,
@@ -13,7 +14,6 @@ import {
   ArrowLeft,
   ShieldCheck,
   Pencil,
-  Printer,
   Banknote,
   CheckCircle2,
   AlertTriangle,
@@ -23,6 +23,7 @@ import {
   ShieldAlert,
   Shield,
   History,
+  Download,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -264,14 +265,59 @@ export function ServiceDetailClient({
     ? currentOrder.pin.split(",").map(Number)
     : null;
 
-  const handlePrint = () => {
+  const downloadHtmlAsPng = async (htmlContent: string, fileName: string) => {
+    const container = document.createElement("div");
+    container.style.position = "fixed";
+    container.style.left = "-9999px";
+    container.style.top = "0";
+    container.style.width = "480px";
+    container.style.background = "#ffffff";
+    container.style.zIndex = "-1000";
+    
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
+
+    // Remove print buttons from screenshot
+    const printBtns = container.querySelectorAll(".print-btn");
+    printBtns.forEach((btn) => btn.remove());
+
+    // Wait for images and layouts to settle
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    try {
+      const targetElement = container.querySelector(".page") as HTMLElement || container;
+      
+      const canvas = await html2canvas(targetElement, {
+        useCORS: true,
+        scale: 2, // high-res
+        backgroundColor: "#ffffff",
+        logging: false,
+      });
+
+      const dataUrl = canvas.toDataURL("image/png");
+      
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast("success", "Gambar nota berhasil diunduh.");
+    } catch {
+      toast("error", "Gagal mengunduh gambar nota.");
+    } finally {
+      document.body.removeChild(container);
+    }
+  };
+
+  const handlePrint = async () => {
     const c = currentOrder;
     const parts = [
       `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invoice ${c.noService}</title>`,
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; font-size: 17px; color: #111; background: #f0efeb; line-height: 1.5; }
-        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; padding: 28px 24px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
+        body { font-family: system-ui, -apple-system, sans-serif; font-size: 17px; color: #111; background: #ffffff; line-height: 1.5; }
+        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 28px 24px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
 
         .header { text-align: center; margin-bottom: 28px; }
         .header .brand { font-size: 28px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
@@ -356,24 +402,17 @@ export function ServiceDetailClient({
       `<button class="print-btn" onclick="window.print()">Cetak / Simpan PDF</button></div></body></html>`,
     ];
     const lines = parts.filter(Boolean).join("\n");
-
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(lines);
-      win.document.close();
-      win.focus();
-      setTimeout(() => { win.print(); }, 300);
-    }
+    await downloadHtmlAsPng(lines, `${c.noService}-invoice.png`);
   };
 
-  const handlePrintReceipt = () => {
+  const handlePrintReceipt = async () => {
     const c = currentOrder;
     const parts = [
       `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tanda Terima ${c.noService}</title>`,
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; font-size: 16px; color: #111; background: #f0efeb; line-height: 1.5; }
-        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: 100vh; padding: 28px 24px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
+        body { font-family: system-ui, -apple-system, sans-serif; font-size: 16px; color: #111; background: #ffffff; line-height: 1.5; }
+        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 28px 24px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
 
         .header { text-align: center; margin-bottom: 24px; }
         .header .brand { font-size: 26px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
@@ -452,14 +491,7 @@ export function ServiceDetailClient({
       `<button class="print-btn" onclick="window.print()">Cetak / Simpan PDF</button></div></body></html>`,
     ];
     const lines = parts.filter(Boolean).join("\n");
-
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(lines);
-      win.document.close();
-      win.focus();
-      setTimeout(() => { win.print(); }, 300);
-    }
+    await downloadHtmlAsPng(lines, `${c.noService}-tanda-terima.png`);
   };
 
   const handleUpdateOrder = async (formData: FormData) => {
@@ -1383,16 +1415,16 @@ export function ServiceDetailClient({
           onClick={handlePrintReceipt}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:bg-muted/20 transition-colors"
         >
-          <Printer className="h-4 w-4" />
-          Cetak Tanda Terima
+          <Download className="h-4 w-4" />
+          Unduh Tanda Terima (PNG)
         </button>
         <button
           type="button"
           onClick={handlePrint}
           className="flex w-full items-center justify-center gap-2 rounded-xl border border-border/50 bg-muted/10 px-4 py-2.5 text-xs font-semibold text-muted-foreground hover:bg-muted/20 transition-colors"
         >
-          <Printer className="h-4 w-4" />
-          Cetak Invoice
+          <Download className="h-4 w-4" />
+          Unduh Invoice (PNG)
         </button>
         {isStaff && (
           <button
