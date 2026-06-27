@@ -276,7 +276,7 @@ export function ServiceDetailClient({
     wrapper.style.alignItems = "flex-start";
     wrapper.style.background = "#ffffff";
     wrapper.style.zIndex = "-1000";
-    wrapper.style.width = "480px"; // Set initial width to measure natural content height
+    wrapper.style.width = "380px"; // Set initial width to measure natural content height
 
     const inner = document.createElement("div");
     inner.style.width = "100%"; // Take full width of wrapper
@@ -296,11 +296,11 @@ export function ServiceDetailClient({
     try {
       const pageElement = wrapper.querySelector(".page") as HTMLElement || inner;
       
-      // Measure natural height of the receipt content at 480px width
+      // Measure natural height of the receipt content at 380px width
       const contentHeight = pageElement.offsetHeight;
       
-      const baseWidth = 480;
-      const baseHeight = 600; // 480 * 5 / 4 (4:5 Ratio)
+      const baseWidth = 380;
+      const baseHeight = 475; // 380 * 5 / 4 (4:5 Ratio)
 
       if (contentHeight <= baseHeight) {
         // Content fits inside standard 4:5 aspect ratio
@@ -384,6 +384,10 @@ export function ServiceDetailClient({
         .status-badge.dp { background: #fff3e0; color: #e65100; }
         .status-badge.belum { background: #ffeef0; color: #c62828; }
 
+        .terms { font-size: 14px; color: #666; padding-top: 16px; margin-top: 20px; border-top: 2px dashed #eee; line-height: 1.6; }
+        .terms-title { font-size: 14px; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; color: #111; }
+        .terms ol { padding-left: 18px; }
+
         .footer { text-align: center; padding-top: 28px; margin-top: 32px; border-top: 2px solid #111; }
         .footer p { font-size: 16px; color: #666; line-height: 1.7; }
         .footer .ref { font-size: 14px; color: #999; margin-top: 8px; }
@@ -429,6 +433,16 @@ export function ServiceDetailClient({
       `</div>`,
 
       c.status === "selesai" && warrantyEnd ? `<div style="font-size:16px;color:#999;padding:12px 0;border-top:1px solid #eee;margin-top:12px">Garansi berlaku hingga ${format(warrantyEnd, "dd MMM yyyy", { locale: localeId })}</div>` : "",
+
+      `<div class="terms">`,
+      `<div class="terms-title">Syarat & Ketentuan Garansi & Pengambilan:</div>`,
+      `<ol>`,
+      `<li>Garansi servis berlaku selama 30 hari terhitung sejak tanggal selesai untuk kerusakan/komponen yang sama.</li>`,
+      `<li>Segel garansi wajib dalam keadaan utuh, tidak rusak, sobek, atau terbongkar.</li>`,
+      `<li>Garansi tidak berlaku jika terjadi kerusakan fisik (pecah/retak), terkena cairan, atau kesalahan penggunaan (human error).</li>`,
+      `<li>Barang yang sudah selesai diservis wajib diambil dalam waktu 60 hari. Kami tidak bertanggung jawab atas kehilangan/kerusakan setelah batas waktu tersebut.</li>`,
+      `</ol>`,
+      `</div>`,
 
       `<div class="footer"><p>${(settings.catatan_invoice || "Terima kasih telah mempercayakan perangkat Anda").replace(/\n/g, "<br>")}</p><p class="ref">${c.noService}</p></div>`,
       `<button class="print-btn" onclick="window.print()">Cetak / Simpan PDF</button></div></body></html>`,
