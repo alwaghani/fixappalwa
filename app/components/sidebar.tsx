@@ -13,6 +13,7 @@ import {
   X,
   Settings,
   UserCheck,
+  History,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -36,6 +37,7 @@ const navItems = [
   { href: "/customers", label: "Customer", icon: Users },
   { href: "/teknisi", label: "Teknisi", icon: UserCheck },
   { href: "/keuangan", label: "Keuangan", icon: Wallet },
+  { href: "/activity-logs", label: "Log Aktivitas", icon: History },
   { href: "/settings", label: "Pengaturan", icon: Settings },
 ];
 
@@ -55,7 +57,7 @@ export default function Sidebar({
     if (item.href === "/keuangan") {
       return role === "admin" || role === "kasir";
     }
-    if (item.href === "/settings" || item.href === "/teknisi") {
+    if (item.href === "/settings" || item.href === "/teknisi" || item.href === "/activity-logs") {
       return role === "admin";
     }
     return true;
