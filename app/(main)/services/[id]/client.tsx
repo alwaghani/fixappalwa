@@ -266,28 +266,57 @@ export function ServiceDetailClient({
     : null;
 
   const downloadHtmlAsPng = async (htmlContent: string, fileName: string) => {
-    const container = document.createElement("div");
-    container.style.position = "fixed";
-    container.style.left = "-9999px";
-    container.style.top = "0";
-    container.style.width = "480px";
-    container.style.background = "#ffffff";
-    container.style.zIndex = "-1000";
+    // Enforce 4:5 aspect ratio by wrapping receipt content inside a flex container
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "fixed";
+    wrapper.style.left = "-9999px";
+    wrapper.style.top = "0";
+    wrapper.style.display = "flex";
+    wrapper.style.justifyContent = "center";
+    wrapper.style.alignItems = "flex-start";
+    wrapper.style.background = "#ffffff";
+    wrapper.style.zIndex = "-1000";
+
+    const inner = document.createElement("div");
+    inner.style.width = "480px";
+    inner.style.background = "#ffffff";
+    inner.innerHTML = htmlContent;
     
-    container.innerHTML = htmlContent;
-    document.body.appendChild(container);
+    wrapper.appendChild(inner);
+    document.body.appendChild(wrapper);
 
     // Remove print buttons from screenshot
-    const printBtns = container.querySelectorAll(".print-btn");
+    const printBtns = wrapper.querySelectorAll(".print-btn");
     printBtns.forEach((btn) => btn.remove());
 
     // Wait for images and layouts to settle
     await new Promise((resolve) => setTimeout(resolve, 150));
 
     try {
-      const targetElement = container.querySelector(".page") as HTMLElement || container;
+      const pageElement = wrapper.querySelector(".page") as HTMLElement || inner;
       
-      const canvas = await html2canvas(targetElement, {
+      // Measure natural height of the receipt content
+      const contentHeight = pageElement.offsetHeight;
+      
+      const baseWidth = 480;
+      const baseHeight = 600; // 480 * 5 / 4 (4:5 Ratio)
+
+      if (contentHeight <= baseHeight) {
+        // Content fits inside standard 4:5 aspect ratio
+        wrapper.style.width = `${baseWidth}px`;
+        wrapper.style.height = `${baseHeight}px`;
+      } else {
+        // Content is taller; scale the width up proportionally to maintain 4:5 ratio
+        const targetWidth = Math.round(contentHeight * 4 / 5);
+        wrapper.style.width = `${targetWidth}px`;
+        wrapper.style.height = `${contentHeight}px`;
+      }
+
+      // Format page styles for a clean screenshot on white background
+      pageElement.style.margin = "0 auto";
+      pageElement.style.boxShadow = "none";
+
+      const canvas = await html2canvas(wrapper, {
         useCORS: true,
         scale: 2, // high-res
         backgroundColor: "#ffffff",
@@ -306,7 +335,7 @@ export function ServiceDetailClient({
     } catch {
       toast("error", "Gagal mengunduh gambar nota.");
     } finally {
-      document.body.removeChild(container);
+      document.body.removeChild(wrapper);
     }
   };
 
