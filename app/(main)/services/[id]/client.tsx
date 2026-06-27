@@ -265,6 +265,16 @@ export function ServiceDetailClient({
     ? currentOrder.pin.split(",").map(Number)
     : null;
 
+  const getWarrantyDays = () => {
+    if (!currentOrder.warrantyUntil || !currentOrder.createdAt) return 0;
+    const startDate = currentOrder.lunasAt ? new Date(currentOrder.lunasAt) : new Date(currentOrder.createdAt);
+    const endDate = new Date(currentOrder.warrantyUntil);
+    const diffTime = endDate.getTime() - startDate.getTime();
+    if (diffTime <= 0) return 0;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+  const warrantyDays = getWarrantyDays();
+
   const downloadHtmlAsPng = async (htmlContent: string, fileName: string) => {
     // Create a temporary container
     const container = document.createElement("div");
@@ -411,12 +421,12 @@ export function ServiceDetailClient({
       c.status === "selesai" && warrantyEnd ? `<div style="font-size:16px;color:#999;padding:12px 0;border-top:1px solid #eee;margin-top:12px">Garansi berlaku hingga ${format(warrantyEnd, "dd MMM yyyy", { locale: localeId })}</div>` : "",
 
       `<div class="terms">`,
-      `<div class="terms-title">Syarat & Ketentuan Garansi & Pengambilan:</div>`,
+      `<div class="terms-title">Syarat & Ketentuan Servis & Garansi:</div>`,
       `<ol>`,
-      `<li>Garansi servis berlaku selama 30 hari terhitung sejak tanggal selesai untuk kerusakan/komponen yang sama.</li>`,
-      `<li>Segel garansi wajib dalam keadaan utuh, tidak rusak, sobek, atau terbongkar.</li>`,
-      `<li>Garansi tidak berlaku jika terjadi kerusakan fisik (pecah/retak), terkena cairan, atau kesalahan penggunaan (human error).</li>`,
-      `<li>Barang yang sudah selesai diservis wajib diambil dalam waktu 60 hari. Kami tidak bertanggung jawab atas kehilangan/kerusakan setelah batas waktu tersebut.</li>`,
+      `<li>${warrantyDays > 0 ? `Garansi servis berlaku selama <b>${warrantyDays} hari</b> terhitung sejak tanggal selesai untuk komponen/kerusakan yang sama.` : 'Garansi servis berlaku sesuai ketentuan sistem untuk komponen/kerusakan yang sama.'}</li>`,
+      `<li>Klaim garansi bersifat <b>GRATIS</b> (tidak dikenakan biaya tambahan).</li>`,
+      `<li>Syarat klaim garansi: segel utuh, tidak cacat fisik, tidak jatuh, dan tidak kemasukan air (human error).</li>`,
+      `<li>Batas maksimal pengambilan barang servis adalah <b>1 tahun</b>. Di luar batas waktu tersebut, kami tidak bertanggung jawab atas kehilangan atau kerusakan barang.</li>`,
       `</ol>`,
       `</div>`,
 
@@ -500,12 +510,13 @@ export function ServiceDetailClient({
       `</div>`,
 
       `<div class="terms">`,
-      `<div class="terms-title">Syarat & Ketentuan Servis:</div>`,
+      `<div class="terms-title">Syarat & Ketentuan Servis & Garansi:</div>`,
       `<ol>`,
       `<li>Pengambilan perangkat wajib membawa struk tanda terima ini.</li>`,
-      `<li>Garansi servis berlaku selama 30 hari terhitung sejak tanggal selesai untuk kerusakan/komponen yang sama.</li>`,
-      `<li>Kami tidak bertanggung jawab atas hilangnya data internal perangkat selama masa perbaikan. Pastikan Anda melakukan backup data terlebih dahulu.</li>`,
-      `<li>Barang servis yang tidak diambil dalam waktu 60 hari di luar tanggung jawab kami apabila terjadi kehilangan atau kerusakan.</li>`,
+      `<li>${warrantyDays > 0 ? `Garansi servis berlaku selama <b>${warrantyDays} hari</b> terhitung sejak tanggal selesai untuk komponen/kerusakan yang sama.` : 'Garansi servis berlaku sesuai ketentuan sistem untuk komponen/kerusakan yang sama.'}</li>`,
+      `<li>Klaim garansi bersifat <b>GRATIS</b> (tidak dikenakan biaya tambahan).</li>`,
+      `<li>Syarat klaim garansi: segel utuh, tidak cacat fisik, tidak jatuh, dan tidak kemasukan air (human error).</li>`,
+      `<li>Batas maksimal pengambilan barang servis adalah <b>1 tahun</b>. Di luar batas waktu tersebut, kami tidak bertanggung jawab atas kehilangan atau kerusakan barang.</li>`,
       `</ol>`,
       `</div>`,
 

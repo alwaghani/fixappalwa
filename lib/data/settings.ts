@@ -7,8 +7,8 @@ import prisma from "@/lib/prisma";
 
 export const DEFAULT_SETTINGS: Record<string, string> = {
   nama_toko: "FIXAPP",
-  alamat: "Jl. Raya Service No. 123",
-  no_telepon: "081234567890",
+  alamat: "Gg. Damai 2, Jepang, Kec. Mejobo, Kabupaten Kudus, Jawa Tengah 59381",
+  no_telepon: "08989310341",
   catatan_invoice: "Terima kasih telah mempercayakan servis HP Anda kepada kami. Garansi berlaku untuk sparepart yang sama.",
 };
 
