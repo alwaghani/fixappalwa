@@ -345,45 +345,45 @@ export function ServiceDetailClient({
       `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invoice ${c.noService}</title>`,
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; font-size: 17px; color: #111; background: #ffffff; line-height: 1.5; }
-        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 28px 24px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
+        body { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; color: #111; background: #ffffff; line-height: 1.5; }
+        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
 
         .header { text-align: center; margin-bottom: 28px; }
-        .header .brand { font-size: 28px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
-        .header .brand-sub { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+        .header .brand { font-size: 34px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
+        .header .brand-sub { font-size: 15px; color: #777; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
 
-        .inv-num { text-align: center; margin-bottom: 24px; padding: 12px 0; border-top: 2px solid #eee; border-bottom: 2px solid #eee; }
-        .inv-num .label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; }
-        .inv-num .value { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
+        .inv-num { text-align: center; margin-bottom: 24px; padding: 16px 0; border-top: 2px solid #eee; border-bottom: 2px solid #eee; }
+        .inv-num .label { font-size: 15px; color: #888; text-transform: uppercase; letter-spacing: 1.5px; }
+        .inv-num .value { font-size: 26px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 16px; margin-bottom: 20px; }
-        .grid-2 .item .lbl { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
-        .grid-2 .item .val { font-weight: 600; font-size: 15px; }
+        .grid-2 .item .lbl { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .grid-2 .item .val { font-weight: 600; font-size: 18px; }
 
         .divider { height: 1px; background: #eee; margin: 20px 0; }
 
         .section { margin-bottom: 20px; }
-        .section-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin-bottom: 8px; }
+        .section-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 10px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 15px; }
-        th { text-align: left; font-weight: 600; font-size: 12px; color: #999; border-bottom: 1px solid #eee; padding: 8px 0 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 17px; }
+        th { text-align: left; font-weight: 600; font-size: 14px; color: #888; border-bottom: 1px solid #eee; padding: 8px 0 6px; }
         th.r, td.r { text-align: right; }
-        td { padding: 6px 0; }
+        td { padding: 8px 0; }
 
         .total-box { border-top: 3px solid #111; margin-top: 8px; padding-top: 10px; }
-        .total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 15px; }
-        .total-row.final { font-size: 22px; font-weight: 800; padding: 8px 0 0; border-top: 1px solid #eee; margin-top: 6px; }
-        .total-row .lbl { color: #666; }
+        .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 17px; }
+        .total-row.final { font-size: 26px; font-weight: 800; padding: 10px 0 0; border-top: 1px solid #eee; margin-top: 8px; }
+        .total-row .lbl { color: #555; }
         .total-row.final .lbl { color: #111; }
 
-        .status-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-badge.lunas { background: #e8f5e9; color: #2e7d32; }
         .status-badge.dp { background: #fff3e0; color: #e65100; }
         .status-badge.belum { background: #ffeef0; color: #c62828; }
 
-        .footer { text-align: center; padding-top: 24px; margin-top: 28px; border-top: 2px solid #111; }
-        .footer p { font-size: 13px; color: #888; line-height: 1.7; }
-        .footer .ref { font-size: 11px; color: #bbb; margin-top: 6px; }
+        .footer { text-align: center; padding-top: 28px; margin-top: 32px; border-top: 2px solid #111; }
+        .footer p { font-size: 15px; color: #666; line-height: 1.7; }
+        .footer .ref { font-size: 13px; color: #999; margin-top: 8px; }
         .print-btn { display: block; width: 100%; background: #111; color: #fff; border: 0; padding: 16px; font-size: 16px; font-weight: 600; border-radius: 12px; margin-top: 24px; cursor: pointer; }
         @media print { .print-btn { display: none; } body { background: #fff; } .page { max-width: none; min-height: auto; padding: 20px; box-shadow: none; } }
       </style></head><body><div class="page">`,
@@ -440,39 +440,39 @@ export function ServiceDetailClient({
       `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tanda Terima ${c.noService}</title>`,
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; font-size: 16px; color: #111; background: #ffffff; line-height: 1.5; }
-        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 28px 24px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
+        body { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; color: #111; background: #ffffff; line-height: 1.5; }
+        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
 
         .header { text-align: center; margin-bottom: 24px; }
-        .header .brand { font-size: 26px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
-        .header .brand-sub { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+        .header .brand { font-size: 32px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
+        .header .brand-sub { font-size: 15px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
 
-        .receipt-num { text-align: center; margin-bottom: 24px; padding: 12px 0; border-top: 2px dashed #eee; border-bottom: 2px dashed #eee; }
-        .receipt-num .label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; }
-        .receipt-num .value { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
+        .receipt-num { text-align: center; margin-bottom: 24px; padding: 16px 0; border-top: 2px dashed #eee; border-bottom: 2px dashed #eee; }
+        .receipt-num .label { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1.5px; }
+        .receipt-num .value { font-size: 24px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-bottom: 20px; }
-        .grid-2 .item .lbl { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
-        .grid-2 .item .val { font-weight: 600; font-size: 14px; }
+        .grid-2 .item .lbl { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .grid-2 .item .val { font-weight: 600; font-size: 17px; }
 
         .divider { height: 1px; background: #eee; margin: 16px 0; }
 
         .section { margin-bottom: 16px; }
-        .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #999; margin-bottom: 6px; }
+        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 8px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        td { padding: 4px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 16px; }
+        td { padding: 6px 0; }
 
         .total-box { border-top: 2px dashed #eee; margin-top: 8px; padding-top: 10px; }
-        .total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
-        .total-row .lbl { color: #666; }
+        .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 16px; }
+        .total-row .lbl { color: #555; }
 
-        .terms { font-size: 11px; color: #777; padding-top: 16px; margin-top: 20px; border-top: 2px dashed #eee; line-height: 1.6; }
-        .terms-title { font-weight: bold; text-transform: uppercase; margin-bottom: 4px; color: #111; }
+        .terms { font-size: 13px; color: #666; padding-top: 16px; margin-top: 20px; border-top: 2px dashed #eee; line-height: 1.6; }
+        .terms-title { font-weight: bold; text-transform: uppercase; margin-bottom: 6px; color: #111; }
         .terms ol { padding-left: 14px; }
 
         .footer { text-align: center; margin-top: 24px; }
-        .footer p { font-size: 12px; color: #888; }
+        .footer p { font-size: 14px; color: #777; }
         
         .print-btn { display: block; width: 100%; background: #111; color: #fff; border: 0; padding: 14px; font-size: 15px; font-weight: 600; border-radius: 10px; margin-top: 24px; cursor: pointer; }
         @media print { .print-btn { display: none; } body { background: #fff; } .page { max-width: none; min-height: auto; padding: 15px; box-shadow: none; } }
