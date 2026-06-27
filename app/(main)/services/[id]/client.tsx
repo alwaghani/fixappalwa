@@ -276,7 +276,7 @@ export function ServiceDetailClient({
     wrapper.style.alignItems = "flex-start";
     wrapper.style.background = "#ffffff";
     wrapper.style.zIndex = "-1000";
-    wrapper.style.width = "380px"; // Set initial width to measure natural content height
+    wrapper.style.width = "450px"; // Set initial width to measure natural content height (450px)
 
     const inner = document.createElement("div");
     inner.style.width = "100%"; // Take full width of wrapper
@@ -296,11 +296,11 @@ export function ServiceDetailClient({
     try {
       const pageElement = wrapper.querySelector(".page") as HTMLElement || inner;
       
-      // Measure natural height of the receipt content at 380px width
+      // Measure natural height of the receipt content at 450px width
       const contentHeight = pageElement.offsetHeight;
       
-      const baseWidth = 380;
-      const baseHeight = 475; // 380 * 5 / 4 (4:5 Ratio)
+      const baseWidth = 450;
+      const baseHeight = 562; // 450 * 5 / 4 (4:5 Ratio)
 
       if (contentHeight <= baseHeight) {
         // Content fits inside standard 4:5 aspect ratio
@@ -316,8 +316,8 @@ export function ServiceDetailClient({
       // Format page styles for a clean screenshot on white background
       pageElement.style.margin = "0 auto";
       pageElement.style.boxShadow = "none";
-      pageElement.style.width = "100%";
-      pageElement.style.maxWidth = "100%";
+      pageElement.style.width = "450px"; // LOCK TO 450px WIDTH TO AVOID LAYOUT STRETCHING
+      pageElement.style.maxWidth = "450px";
 
       const canvas = await html2canvas(wrapper, {
         useCORS: true,
@@ -349,7 +349,7 @@ export function ServiceDetailClient({
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, -apple-system, sans-serif; font-size: 21px; color: #111; background: #ffffff; line-height: 1.5; }
-        .page { width: 100%; max-width: 100%; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: none; }
+        .page { width: 450px; max-width: 450px; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 24px; box-shadow: none; }
 
         .header { text-align: center; margin-bottom: 28px; }
         .header .brand { font-size: 38px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
@@ -458,7 +458,7 @@ export function ServiceDetailClient({
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; color: #111; background: #ffffff; line-height: 1.5; }
-        .page { width: 100%; max-width: 100%; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: none; }
+        .page { width: 450px; max-width: 450px; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 24px; box-shadow: none; }
 
         .header { text-align: center; margin-bottom: 24px; }
         .header .brand { font-size: 36px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
