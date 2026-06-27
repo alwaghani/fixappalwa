@@ -276,9 +276,10 @@ export function ServiceDetailClient({
     wrapper.style.alignItems = "flex-start";
     wrapper.style.background = "#ffffff";
     wrapper.style.zIndex = "-1000";
+    wrapper.style.width = "480px"; // Set initial width to measure natural content height
 
     const inner = document.createElement("div");
-    inner.style.width = "480px";
+    inner.style.width = "100%"; // Take full width of wrapper
     inner.style.background = "#ffffff";
     inner.innerHTML = htmlContent;
     
@@ -295,7 +296,7 @@ export function ServiceDetailClient({
     try {
       const pageElement = wrapper.querySelector(".page") as HTMLElement || inner;
       
-      // Measure natural height of the receipt content
+      // Measure natural height of the receipt content at 480px width
       const contentHeight = pageElement.offsetHeight;
       
       const baseWidth = 480;
@@ -315,6 +316,8 @@ export function ServiceDetailClient({
       // Format page styles for a clean screenshot on white background
       pageElement.style.margin = "0 auto";
       pageElement.style.boxShadow = "none";
+      pageElement.style.width = "100%";
+      pageElement.style.maxWidth = "100%";
 
       const canvas = await html2canvas(wrapper, {
         useCORS: true,
@@ -345,45 +348,45 @@ export function ServiceDetailClient({
       `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Invoice ${c.noService}</title>`,
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; font-size: 19px; color: #111; background: #ffffff; line-height: 1.5; }
-        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
+        body { font-family: system-ui, -apple-system, sans-serif; font-size: 21px; color: #111; background: #ffffff; line-height: 1.5; }
+        .page { width: 100%; max-width: 100%; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: none; }
 
         .header { text-align: center; margin-bottom: 28px; }
-        .header .brand { font-size: 34px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
-        .header .brand-sub { font-size: 15px; color: #777; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+        .header .brand { font-size: 38px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
+        .header .brand-sub { font-size: 16px; color: #777; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
 
         .inv-num { text-align: center; margin-bottom: 24px; padding: 16px 0; border-top: 2px solid #eee; border-bottom: 2px solid #eee; }
         .inv-num .label { font-size: 15px; color: #888; text-transform: uppercase; letter-spacing: 1.5px; }
-        .inv-num .value { font-size: 26px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
+        .inv-num .value { font-size: 28px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 16px; margin-bottom: 20px; }
-        .grid-2 .item .lbl { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-        .grid-2 .item .val { font-weight: 600; font-size: 18px; }
+        .grid-2 .item .lbl { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .grid-2 .item .val { font-weight: 600; font-size: 20px; }
 
         .divider { height: 1px; background: #eee; margin: 20px 0; }
 
         .section { margin-bottom: 20px; }
-        .section-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 10px; }
+        .section-title { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 10px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 17px; }
-        th { text-align: left; font-weight: 600; font-size: 14px; color: #888; border-bottom: 1px solid #eee; padding: 8px 0 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 19px; }
+        th { text-align: left; font-weight: 600; font-size: 15px; color: #888; border-bottom: 1px solid #eee; padding: 8px 0 6px; }
         th.r, td.r { text-align: right; }
         td { padding: 8px 0; }
 
         .total-box { border-top: 3px solid #111; margin-top: 8px; padding-top: 10px; }
-        .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 17px; }
-        .total-row.final { font-size: 26px; font-weight: 800; padding: 10px 0 0; border-top: 1px solid #eee; margin-top: 8px; }
+        .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 19px; }
+        .total-row.final { font-size: 28px; font-weight: 800; padding: 10px 0 0; border-top: 1px solid #eee; margin-top: 8px; }
         .total-row .lbl { color: #555; }
         .total-row.final .lbl { color: #111; }
 
-        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
         .status-badge.lunas { background: #e8f5e9; color: #2e7d32; }
         .status-badge.dp { background: #fff3e0; color: #e65100; }
         .status-badge.belum { background: #ffeef0; color: #c62828; }
 
         .footer { text-align: center; padding-top: 28px; margin-top: 32px; border-top: 2px solid #111; }
-        .footer p { font-size: 15px; color: #666; line-height: 1.7; }
-        .footer .ref { font-size: 13px; color: #999; margin-top: 8px; }
+        .footer p { font-size: 16px; color: #666; line-height: 1.7; }
+        .footer .ref { font-size: 14px; color: #999; margin-top: 8px; }
         .print-btn { display: block; width: 100%; background: #111; color: #fff; border: 0; padding: 16px; font-size: 16px; font-weight: 600; border-radius: 12px; margin-top: 24px; cursor: pointer; }
         @media print { .print-btn { display: none; } body { background: #fff; } .page { max-width: none; min-height: auto; padding: 20px; box-shadow: none; } }
       </style></head><body><div class="page">`,
@@ -412,7 +415,7 @@ export function ServiceDetailClient({
       `<div class="section"><div class="section-title">Perangkat</div>
       <table><tr><td>${c.merk} ${c.tipe}</td></tr>
       <tr><td style="color:#888">${c.problem}</td></tr>
-      ${c.catatan ? `<tr><td style="font-size:13px;color:#999">Catatan: ${c.catatan}</td></tr>` : ""}</table></div>`,
+      ${c.catatan ? `<tr><td style="font-size:16px;color:#999">Catatan: ${c.catatan}</td></tr>` : ""}</table></div>`,
 
       `<div class="section"><div class="section-title">Sparepart</div>`,
       c.parts.length === 0 ? `<p style="color:#bbb;font-style:italic">Tidak ada sparepart</p>` : `<table><tr><th>Nama</th><th class="r">Harga</th></tr>${c.parts.map((p) => `<tr><td>${p.nama}</td><td class="r">${formatHarga(p.harga)}</td></tr>`).join("")}</table>`,
@@ -425,7 +428,7 @@ export function ServiceDetailClient({
       c.biayaFinal != null ? `<div class="total-row final"><span class="lbl">${c.statusBayar === "LUNAS" ? "Status" : "Sisa Tagihan"}</span><span>${c.statusBayar === "LUNAS" ? "<span style='color:#2e7d32'>LUNAS</span>" : formatHarga(c.biayaFinal - (c.dpNominal ?? 0))}</span></div>` : "",
       `</div>`,
 
-      c.status === "selesai" && warrantyEnd ? `<div style="font-size:13px;color:#999;padding:12px 0;border-top:1px solid #eee;margin-top:12px">Garansi berlaku hingga ${format(warrantyEnd, "dd MMM yyyy", { locale: localeId })}</div>` : "",
+      c.status === "selesai" && warrantyEnd ? `<div style="font-size:16px;color:#999;padding:12px 0;border-top:1px solid #eee;margin-top:12px">Garansi berlaku hingga ${format(warrantyEnd, "dd MMM yyyy", { locale: localeId })}</div>` : "",
 
       `<div class="footer"><p>${(settings.catatan_invoice || "Terima kasih telah mempercayakan perangkat Anda").replace(/\n/g, "<br>")}</p><p class="ref">${c.noService}</p></div>`,
       `<button class="print-btn" onclick="window.print()">Cetak / Simpan PDF</button></div></body></html>`,
@@ -440,39 +443,39 @@ export function ServiceDetailClient({
       `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tanda Terima ${c.noService}</title>`,
       `<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, sans-serif; font-size: 18px; color: #111; background: #ffffff; line-height: 1.5; }
-        .page { max-width: 480px; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: 0 0 40px rgba(0,0,0,0.06); }
+        body { font-family: system-ui, -apple-system, sans-serif; font-size: 20px; color: #111; background: #ffffff; line-height: 1.5; }
+        .page { width: 100%; max-width: 100%; margin: 0 auto; background: #fff; min-height: auto; padding: 32px 28px; box-shadow: none; }
 
         .header { text-align: center; margin-bottom: 24px; }
-        .header .brand { font-size: 32px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
-        .header .brand-sub { font-size: 15px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+        .header .brand { font-size: 36px; font-weight: 900; letter-spacing: 1.5px; color: #111; }
+        .header .brand-sub { font-size: 16px; color: #555; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
 
         .receipt-num { text-align: center; margin-bottom: 24px; padding: 16px 0; border-top: 2px dashed #eee; border-bottom: 2px dashed #eee; }
-        .receipt-num .label { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1.5px; }
-        .receipt-num .value { font-size: 24px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
+        .receipt-num .label { font-size: 15px; color: #888; text-transform: uppercase; letter-spacing: 1.5px; }
+        .receipt-num .value { font-size: 26px; font-weight: 800; letter-spacing: 0.5px; color: #111; margin-top: 4px; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 12px; margin-bottom: 20px; }
-        .grid-2 .item .lbl { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-        .grid-2 .item .val { font-weight: 600; font-size: 17px; }
+        .grid-2 .item .lbl { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .grid-2 .item .val { font-weight: 600; font-size: 19px; }
 
         .divider { height: 1px; background: #eee; margin: 16px 0; }
 
         .section { margin-bottom: 16px; }
-        .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 8px; }
+        .section-title { font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 8px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 16px; }
+        table { width: 100%; border-collapse: collapse; font-size: 18px; }
         td { padding: 6px 0; }
 
         .total-box { border-top: 2px dashed #eee; margin-top: 8px; padding-top: 10px; }
-        .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 16px; }
+        .total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 18px; }
         .total-row .lbl { color: #555; }
 
-        .terms { font-size: 13px; color: #666; padding-top: 16px; margin-top: 20px; border-top: 2px dashed #eee; line-height: 1.6; }
+        .terms { font-size: 14px; color: #666; padding-top: 16px; margin-top: 20px; border-top: 2px dashed #eee; line-height: 1.6; }
         .terms-title { font-weight: bold; text-transform: uppercase; margin-bottom: 6px; color: #111; }
         .terms ol { padding-left: 14px; }
 
         .footer { text-align: center; margin-top: 24px; }
-        .footer p { font-size: 14px; color: #777; }
+        .footer p { font-size: 15px; color: #777; }
         
         .print-btn { display: block; width: 100%; background: #111; color: #fff; border: 0; padding: 14px; font-size: 15px; font-weight: 600; border-radius: 10px; margin-top: 24px; cursor: pointer; }
         @media print { .print-btn { display: none; } body { background: #fff; } .page { max-width: none; min-height: auto; padding: 15px; box-shadow: none; } }
@@ -499,7 +502,7 @@ export function ServiceDetailClient({
       `<div class="section"><div class="section-title">Perangkat</div>
       <table><tr><td>${c.merk} ${c.tipe}</td></tr>
       <tr><td style="color:#666">Masalah: ${c.problem}</td></tr>
-      ${c.catatan ? `<tr><td style="font-size:13px;color:#777">Catatan: ${c.catatan}</td></tr>` : ""}</table></div>`,
+      ${c.catatan ? `<tr><td style="font-size:15px;color:#777">Catatan: ${c.catatan}</td></tr>` : ""}</table></div>`,
 
       `<div class="total-box">`,
       `<div class="total-row"><span class="lbl">Estimasi Biaya</span><span>${formatHarga(c.estimasiBiaya)}</span></div>`,
