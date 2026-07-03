@@ -6,6 +6,15 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # fixapp — OpenCode instructions
 
+## Business Domain
+- **App type**: Manajemen toko servis HP (bukan POS/retail sparepart)
+- **Alur utama**: Pelanggan → Service Order (SRV-YYMMDD-NNN) → Teknisi → Selesai → Bayar
+- **Sparepart** (`ServicePart`): modal biaya toko untuk mengerjakan servis, **bukan** item jual ke pelanggan
+  - Satu-satunya kolom biaya adalah `hargaPokok` (harga modal) — kolom `harga` sudah dihapus permanen
+  - Jangan tambah field harga jual terpisah — pelanggan membayar satu nilai `biayaFinal` yang disepakati
+- **Uang**: disimpan dalam **sen** (Rupiah × 100), tampilkan dengan `formatHarga()` dari `@/lib/constants`
+- **Laba kotor servis** = `biayaFinal` − Σ `hargaPokok` part
+
 ## Stack
 - **Framework**: Next.js 16.2.6 + React 19.2.4 (App Router)
 - **Styling**: Tailwind CSS v4 (`@import "tailwindcss"`, not v3 directives; custom tokens via `@theme inline {}`)
@@ -50,7 +59,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Label**: `text-xs font-semibold uppercase tracking-wider text-muted-foreground`
 - **Alert**: `rounded-lg border px-4 py-3 text-sm animate-in fade-in` with `*-destructive*` (error) or `*-accents-green*` (success)
 - **Badge mapping**: `diterima→outline`, `menunggu_part→secondary`, `dikerjakan→default`, `selesai/LUNAS→default` + `bg-accents-green text-white`, `BELUM_LUNAS→destructive`, `DP→secondary`
-- **Theme**: dark (bg `#141413`, card `#1a1a19`, fg `#faf9f5`), primary `#d97757` (terracotta), accents: blue/green/orange(#c9956b)/warm
+- **Theme**: dark (bg `#141413`, card `#1a1a19`, fg `#faf9f5`), primary `#d97757` (terracotta), accents: blue(`#6a9bcc`)/green(`#788c5d`)/orange(`#d97757`)/warm(`#b0aea5`)
 - **Custom utilities**: `card-hover`, `focus-ring`, `gradient-card`, `glass-card`, `radial-ambient`, `shimmer`
 
 ## Conventions
@@ -61,6 +70,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Dashboard streaming: multiple async sub-components calling the same `React.cache()`-wrapped function (dedup per request)
 - Prisma enum validation: use `z.nativeEnum()` not `z.enum([...])`
 - No CI pipeline yet
+- **ActivityLog**: setiap mutasi data penting (buat order, ubah status, tambah/hapus part, ubah bayar) wajib buat log via `prisma.activityLog.create()` di `lib/data/service-orders.ts`
+- **ServicePart cost model**: `addServicePart(serviceOrderId, { nama, hargaPokok })` — jangan pass `harga` terpisah
 
 ## Test
 - **Vitest** for unit/integration tests in `app/__tests__/` or `lib/__tests__/`
@@ -76,5 +87,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Service number format `SRV-YYMMDD-NNN` stored in `noService String @unique` on ServiceOrder
 - Keyboard: `Ctrl+K` / `/` focus search, `n` new service (from services list)
 - Delete cascade: ServicePart `onDelete: Cascade` — deleting order cleans up all parts
+- `deleteServicePart()` secara eksplisit hapus `CashTransaction` terkait sebelum hapus part (anti-zombie transaction)
 - `'use cache'` + `cacheLife()` + `cacheTag()` utk data jarang berubah; `updateTag()` utk read-your-writes invalidation
 - Build output ◐ = Partial Prerender (static HTML shell + dynamic streaming via Suspense)
+- `/activity-logs` hanya bisa diakses role `admin` (redirect jika bukan admin); data di `lib/data/activity-logs.ts`

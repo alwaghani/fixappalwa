@@ -153,8 +153,7 @@ export async function addServicePartAction(
   const parsed = servicePartSchema.safeParse({
     serviceOrderId: Number(formData.get("serviceOrderId")),
     nama: formData.get("nama"),
-    harga: stripDots(formData.get("harga")) ?? 0,
-    hargaPokok: formData.get("hargaPokok") ? stripDots(formData.get("hargaPokok")) : undefined,
+    hargaPokok: stripDots(formData.get("hargaPokok")) ?? 0,
   });
 
   if (!parsed.success) {
@@ -164,8 +163,7 @@ export async function addServicePartAction(
 
   const part = await addServicePart(parsed.data.serviceOrderId, {
     nama: parsed.data.nama,
-    harga: parsed.data.harga,
-    ...(parsed.data.hargaPokok !== undefined ? { hargaPokok: parsed.data.hargaPokok } : {}),
+    hargaPokok: parsed.data.hargaPokok,
   }, session.user.id ? Number(session.user.id) : undefined);
   revalidatePath(`/services/${parsed.data.serviceOrderId}`);
   return { success: true, partId: part.id };
@@ -545,7 +543,6 @@ export async function getUserPerformanceAction(userId: number) {
         parts: {
           select: {
             hargaPokok: true,
-            harga: true,
             nama: true,
           },
         },

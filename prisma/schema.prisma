@@ -81,8 +81,7 @@ model ServicePart {
   serviceOrderId Int
   serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
   nama           String
-  harga          Int
-  hargaPokok     Int?
+  hargaPokok     Int
   createdAt      DateTime     @default(now())
   transaction    CashTransaction?
 }

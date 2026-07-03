@@ -284,7 +284,7 @@ export async function updateServiceStatus(id: number, status: ServiceStatus, war
 
 export async function addServicePart(
   serviceOrderId: number,
-  data: { nama: string; harga: number; hargaPokok?: number },
+  data: { nama: string; hargaPokok: number },
   userId?: number,
 ) {
   const order = await prisma.serviceOrder.findUnique({
@@ -292,15 +292,14 @@ export async function addServicePart(
     select: { noService: true },
   });
 
-  const cost = data.hargaPokok ?? data.harga;
-
   const part = await prisma.servicePart.create({
     data: {
       serviceOrderId,
-      ...data,
+      nama: data.nama,
+      hargaPokok: data.hargaPokok,
       transaction: {
         create: {
-          amount: cost,
+          amount: data.hargaPokok,
           type: "OUT",
           category: "SPAREPART",
           description: `Pengeluaran modal sparepart: ${data.nama} untuk nomor service: ${order?.noService ?? ""}`,
@@ -314,7 +313,7 @@ export async function addServicePart(
     data: {
       serviceOrderId,
       action: "PART_ADDED",
-      detail: `Sparepart "${data.nama}" ditambahkan (Modal: ${formatHarga(data.hargaPokok ?? 0)}, Jual: ${formatHarga(data.harga)})`,
+      detail: `Sparepart "${data.nama}" ditambahkan (Modal: ${formatHarga(data.hargaPokok)})`,
       userId: userId || null,
     },
   });
@@ -338,6 +337,11 @@ export async function deleteServicePart(id: number, userId?: number) {
       },
     });
   }
+
+  // Hapus transaksi kas keluar terkait sparepart agar tidak menjadi transaksi zombie/sampah
+  await prisma.cashTransaction.deleteMany({
+    where: { servicePartId: id },
+  });
 
   return prisma.servicePart.delete({ where: { id } });
 }

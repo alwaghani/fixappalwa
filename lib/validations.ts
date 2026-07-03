@@ -42,8 +42,7 @@ export const serviceOrderUpdateSchema = z.object({
 export const servicePartSchema = z.object({
   serviceOrderId: z.number().int().positive(),
   nama: z.string().min(1, "Nama part wajib diisi").max(100).trim(),
-  harga: z.number().int().min(0),
-  hargaPokok: z.number().int().min(0).optional(),
+  hargaPokok: z.number().int().min(0, "Harga modal wajib diisi"),
 });
 
 export const paymentUpdateSchema = z.object({

@@ -103,7 +103,6 @@ describe("Audit Log / Activity Log System", () => {
   it("should create PART_ADDED log when adding a service part", async () => {
     const part = await addServicePart(orderId, {
       nama: "Baterai iPhone 15",
-      harga: 85000000, // Rp 850.000
       hargaPokok: 50000000 // Rp 500.000
     });
 

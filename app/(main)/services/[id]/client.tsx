@@ -409,7 +409,7 @@ export function ServiceDetailClient({
       ${c.catatan ? `<tr><td style="font-size:16px;color:#999">Catatan: ${c.catatan}</td></tr>` : ""}</table></div>`,
 
       `<div class="section"><div class="section-title">Sparepart</div>`,
-      c.parts.length === 0 ? `<p style="color:#bbb;font-style:italic">Tidak ada sparepart</p>` : `<table><tr><th>Nama</th><th class="r">Harga</th></tr>${c.parts.map((p) => `<tr><td>${p.nama}</td><td class="r">${formatHarga(p.harga)}</td></tr>`).join("")}</table>`,
+      c.parts.length === 0 ? `<p style="color:#bbb;font-style:italic">Tidak ada sparepart</p>` : `<table><tr><th>Nama</th><th class="r">Modal</th></tr>${c.parts.map((p) => `<tr><td>${p.nama}</td><td class="r">${formatHarga(p.hargaPokok)}</td></tr>`).join("")}</table>`,
       `</div>`,
 
       `<div class="total-box">`,
@@ -604,7 +604,6 @@ export function ServiceDetailClient({
       id: tempId,
       serviceOrderId: currentOrder.id,
       nama: partNama,
-      harga: hargaPokokSen,
       hargaPokok: hargaPokokSen,
       createdAt: new Date(),
     };
@@ -616,7 +615,6 @@ export function ServiceDetailClient({
     const formData = new FormData();
     formData.set("serviceOrderId", currentOrder.id.toString());
     formData.set("nama", partNama);
-    formData.set("harga", String(hargaPokokSen));
     formData.set("hargaPokok", String(hargaPokokSen));
 
     const result = await addServicePartAction(undefined, formData);
@@ -1099,12 +1097,12 @@ export function ServiceDetailClient({
                     <div>
                       <p className="text-sm font-semibold text-foreground">{part.nama}</p>
                       <span className="text-xs text-muted-foreground/60">
-                        @ {formatHarga(part.hargaPokok ?? part.harga)}
+                        @ {formatHarga(part.hargaPokok)}
                       </span>
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="text-sm font-bold text-foreground">
-                        {formatHarga(part.harga)}
+                        {formatHarga(part.hargaPokok)}
                       </span>
                       {currentOrder.status !== "selesai" && (
                         <Button
@@ -1277,7 +1275,7 @@ export function ServiceDetailClient({
                 {currentOrder.parts.length > 0 && (
                   <div className="flex justify-between">
                     <span>Total Suku Cadang</span>
-                    <span>{formatHarga(currentOrder.parts.reduce((s, p) => s + p.harga, 0))}</span>
+                    <span>{formatHarga(currentOrder.parts.reduce((s, p) => s + p.hargaPokok, 0))}</span>
                   </div>
                 )}
                 {currentOrder.dpNominal != null && currentOrder.dpNominal > 0 && (
