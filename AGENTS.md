@@ -30,6 +30,34 @@ This version has breaking changes — APIs, conventions, and file structure may 
 | Lint | `npm run lint` |
 | Unit test | `npm test` (vitest watch) |
 | Unit test (CI) | `npm run test:run` |
+| Seed DB | `npx tsx scripts/seed.ts` |
+| Prisma Studio | `npx prisma studio` |
+
+## Project Structure
+```
+app/
+  (main)/         → semua halaman utama (layout + sidebar)
+    dashboard/    → ringkasan & statistik
+    services/     → manajemen servis HP (core feature)
+    customers/    → manajemen pelanggan
+    teknisi/      → manajemen teknisi + komisi
+    keuangan/     → laporan arus kas & laba
+    activity-logs/→ log aktivitas (admin only)
+    settings/     → pengaturan toko (admin only)
+  api/            → API routes (auth, export CSV)
+  components/     → shared UI components (AppShell, Sidebar, dll)
+lib/
+  actions.ts      → semua Server Actions (mutasi data)
+  data/           → query helpers per domain (service-orders, keuangan, dll)
+  validations.ts  → Zod schemas
+  constants.ts    → formatHarga(), konstanta status, dll
+  prisma.ts       → Prisma client singleton
+prisma/
+  schema.prisma   → definisi model DB
+  migrations/     → history migrasi
+scripts/
+  seed.ts         → seed user admin & teknisi default
+```
 
 ## Config
 - `cacheComponents: true` enables Partial Prerender (◐); client providers with dynamic APIs need `<Suspense>`
@@ -76,6 +104,19 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## Test
 - **Vitest** for unit/integration tests in `app/__tests__/` or `lib/__tests__/`
 - Vitest: `npm test` (watch) or `npm run test:run` (single run)
+
+## Onboarding (First Run)
+1. `npm install`
+2. Copy `.env.local.example` → `.env.local` (atau set `DATABASE_URL` ke path SQLite)
+3. `npx prisma db push` — sinkronkan schema ke DB baru
+4. `npx tsx scripts/seed.ts` — buat user default
+5. `npm run dev` — buka http://localhost:3000
+
+**Default credentials** (ganti setelah login pertama):
+| Role | Username | Password |
+|---|---|---|
+| Admin | `admin` | `admin123` |
+| Teknisi | `teknisi` | `teknisi123` |
 
 ## Gotchas
 - Tailwind v4: use `@import "tailwindcss"` in CSS, NOT `@tailwind base/components/utilities`
