@@ -185,6 +185,7 @@ export type ProfitStats = {
   serviceCount: number;
   totalKomisi: number;
   totalLabaBersih: number;
+  totalPengeluaranOperasional: number;
   topServices: Array<{
     id: number;
     noService: string;
@@ -214,19 +215,29 @@ export const getProfitStats = cache(async (
   const monthStart = startDate ?? new Date(year, month - 1, 1);
   const monthEnd = endDate ?? new Date(year, month, 0, 23, 59, 59, 999);
 
-  const orders = await prisma.serviceOrder.findMany({
-    where: {
-      biayaFinal: { not: null },
-      statusBayar: "LUNAS",
-      lunasAt: { gte: monthStart, lte: monthEnd },
-    },
-    include: {
-      customer: { select: { nama: true } },
-      parts: { select: { hargaPokok: true } },
-      teknisi: { select: { name: true, username: true, role: true, komisiPersen: true } },
-    },
-    orderBy: { lunasAt: "desc" },
-  });
+  const [orders, manualOutTransactions] = await Promise.all([
+    prisma.serviceOrder.findMany({
+      where: {
+        biayaFinal: { not: null },
+        statusBayar: "LUNAS",
+        lunasAt: { gte: monthStart, lte: monthEnd },
+      },
+      include: {
+        customer: { select: { nama: true } },
+        parts: { select: { hargaPokok: true } },
+        teknisi: { select: { name: true, username: true, role: true, komisiPersen: true } },
+      },
+      orderBy: { lunasAt: "desc" },
+    }),
+    prisma.cashTransaction.findMany({
+      where: {
+        type: "OUT",
+        serviceOrderId: null,
+        createdAt: { gte: monthStart, lte: monthEnd },
+      },
+      select: { amount: true },
+    }),
+  ]);
 
   const entries = orders.map((o) => {
     const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
@@ -259,7 +270,10 @@ export const getProfitStats = cache(async (
   const totalModal = entries.reduce((s, e) => s + e.modalPart, 0);
   const totalProfit = entries.reduce((s, e) => s + e.profit, 0);
   const totalKomisi = entries.reduce((s, e) => s + e.komisi, 0);
-  const totalLabaBersih = totalProfit - totalKomisi;
+  const totalPengeluaranOperasional = manualOutTransactions.reduce((s, t) => s + t.amount, 0);
+  
+  // Laba bersih toko = Laba kotor servis - Komisi teknisi - Pengeluaran operasional
+  const totalLabaBersih = totalProfit - totalKomisi - totalPengeluaranOperasional;
 
   const topServices = entries
     .sort((a, b) => b.profit - a.profit)
@@ -273,6 +287,7 @@ export const getProfitStats = cache(async (
     serviceCount: entries.length,
     totalKomisi,
     totalLabaBersih,
+    totalPengeluaranOperasional,
     topServices,
   };
 });

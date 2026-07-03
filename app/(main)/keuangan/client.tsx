@@ -870,7 +870,7 @@ export function KeuanganClient({
         <h2 className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <TrendingUp className="h-3.5 w-3.5 text-accents-green" /> Analisa Laba
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 mb-5">
           <div className="rounded-lg bg-muted/20 p-3.5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Laba Kotor</p>
             <p className="text-lg font-semibold text-foreground">{formatHarga(profitStats.totalProfit)}</p>
@@ -879,8 +879,12 @@ export function KeuanganClient({
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1">Komisi Teknisi</p>
             <p className="text-lg font-semibold text-accents-orange">{formatHarga(profitStats.totalKomisi)}</p>
           </div>
+          <div className="rounded-lg bg-muted/20 p-3.5 bg-destructive/5 border border-destructive/20">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-1">Beban Operasional</p>
+            <p className="text-lg font-semibold text-destructive">{formatHarga(profitStats.totalPengeluaranOperasional)}</p>
+          </div>
           <div className="rounded-lg bg-muted/20 p-3.5 bg-accents-green/5 border border-accents-green/20">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-accents-green mb-1">Laba Bersih Toko</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-accents-green mb-1">Laba Bersih Aktual</p>
             <p className="text-lg font-bold text-accents-green">{formatHarga(profitStats.totalLabaBersih)}</p>
           </div>
           <div className="rounded-lg bg-muted/20 p-3.5">
