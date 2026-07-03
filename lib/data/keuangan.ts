@@ -240,7 +240,7 @@ export const getProfitStats = cache(async (
   ]);
 
   const entries = orders.map((o) => {
-    const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
+    const modalPart = o.parts.reduce((sum, p) => sum + p.hargaPokok, 0);
     const revenue = o.biayaFinal ?? 0;
     const profit = revenue - modalPart; // Laba Kotor
 

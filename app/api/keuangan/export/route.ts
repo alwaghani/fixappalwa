@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     const formatUang = (sen: number | null) => (sen ? Math.round(sen / 100) : 0);
     const dateLunas = o.lunasAt ? format(new Date(o.lunasAt), "yyyy-MM-dd") : "-";
     const dateMasuk = format(new Date(o.createdAt), "yyyy-MM-dd");
-    const totalSparepart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
+    const totalSparepart = o.parts.reduce((s, p) => s + p.hargaPokok, 0);
     const labaBersih = o.biayaFinal ? (o.biayaFinal - totalSparepart) : 0;
 
     // Bersihkan karakter pemisah CSV di text

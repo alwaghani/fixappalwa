@@ -259,7 +259,7 @@ export function ServiceDetailClient({
 
   const StatusIcon = STATUS_ICONS[currentOrder.status];
   const biaya = currentOrder.biayaFinal ?? currentOrder.estimasiBiaya;
-  const totalModal = currentOrder.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
+  const totalModal = currentOrder.parts.reduce((s, p) => s + p.hargaPokok, 0);
   const laba = currentOrder.biayaFinal !== null ? currentOrder.biayaFinal - totalModal : null;
   const pinArr = currentOrder.pin && /^\d+(,\d+)*$/.test(currentOrder.pin)
     ? currentOrder.pin.split(",").map(Number)

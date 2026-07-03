@@ -644,7 +644,7 @@ export const getDashboardData = cache(async (teknisiId?: number): Promise<Dashbo
   let revenueBulanIni = 0;
   if (teknisiId) {
     revenueBulanIni = lunasOrders.reduce((sum, o) => {
-      const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
+      const modalPart = o.parts.reduce((s, p) => s + p.hargaPokok, 0);
       const profit = (o.biayaFinal ?? 0) - modalPart;
       const persen = o.teknisi?.role === "admin" ? 0 : (o.teknisi?.komisiPersen ?? 40);
       return sum + Math.max(0, Math.round(profit * (persen / 100)));
@@ -679,7 +679,7 @@ export const getDashboardData = cache(async (teknisiId?: number): Promise<Dashbo
     let amount = 0;
     if (teknisiId) {
       amount = filteredOrders.reduce((sum, o) => {
-        const modalPart = o.parts.reduce((s, p) => s + (p.hargaPokok ?? 0), 0);
+        const modalPart = o.parts.reduce((s, p) => s + p.hargaPokok, 0);
         const profit = (o.biayaFinal ?? 0) - modalPart;
         const persen = o.teknisi?.role === "admin" ? 0 : (o.teknisi?.komisiPersen ?? 40);
         return sum + Math.max(0, Math.round(profit * (persen / 100)));

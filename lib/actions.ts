@@ -565,7 +565,7 @@ export async function getUserPerformanceAction(userId: number) {
     let totalModalPartCompleted = 0;
 
     const formattedOrders = serviceOrders.map((o) => {
-      const modalPart = o.parts.reduce((sum, p) => sum + (p.hargaPokok ?? 0), 0);
+      const modalPart = o.parts.reduce((sum, p) => sum + p.hargaPokok, 0);
       const revenue = o.biayaFinal ?? 0;
       const profit = Math.max(0, revenue - modalPart);
       
